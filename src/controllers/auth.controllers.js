@@ -4,7 +4,6 @@ const { hashPassword, comparePassword } = require('../utils/hash')
 
 const logger = require('../utils/logger');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
-const { date, success } = require('zod');
 
 const register = async (req, res) => {
     try {
@@ -67,103 +66,159 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         const userResult = await pool.query(
-
-            'SELECT * FROM users WHERE email = $1',
+            `SELECT * FROM users WHERE email = $1`,
             [email]
+        );
 
-        )
-
-        if (userResult.rows[0].length === 0) {
-
+        if (userResult.rows.length === 0) {
             logger.warn(
-
-                { email }, "Login failed : User not found"
-
-            )
+                { email },
+                "Login failed: User not found"
+            );
 
             return res.status(401).json({
                 success: false,
-                message: "Invalid credentials"
-            })
+                message: "Invalid credentials",
+            });
         }
 
         const user = userResult.rows[0];
 
-        if ((user.account_locked_until) && new date(user.account_locked_until) > new date()) {
-            logger.warn({
-                userId: user.id,
-                email: user.email
-            }, "Login failed : Account is blocked")
+        if (
+            user.account_locked_until &&
+            new Date(user.account_locked_until) >
+            new Date()
+        ) {
+            logger.warn(
+                {
+                    userId: user.id,
+                    email: user.email,
+                },
+                "Login blocked: Account locked"
+            );
 
             return res.status(423).json({
                 success: false,
-                message: "Account is temporarily locked"
-            })
+                message:
+                    "Account is temporarily locked",
+            });
         }
 
-        const passwordValid = await comparePassword(password, user.password)
+        const passwordValid =
+            await comparePassword(
+                password,
+                user.password
+            );
 
         if (!passwordValid) {
-            const failedAttempts = user.failed_attempts + 1
+            const failedAttempts =
+                user.failed_attempts + 1;
+
+            await pool.query(
+                `
+        UPDATE users
+        SET failed_attempts = $1
+        WHERE id = $2
+        `,
+                [
+                    failedAttempts,
+                    user.id,
+                ]
+            );
 
             if (failedAttempts >= 5) {
                 await pool.query(
-                    `UPDATE users SET failed_attempts = 0,
-                account_locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $1
-                `,
+                    `
+          UPDATE users
+          SET
+            failed_attempts = 0,
+            account_locked_until =
+              NOW() +
+              INTERVAL '15 minutes'
+          WHERE id = $1
+          `,
                     [user.id]
-                )
+                );
 
-                logger.warn({
-                    userId: user.id,
-                    email: user.email
-                }, "Account locked due to too many login attempts")
+                logger.warn(
+                    {
+                        userId: user.id,
+                        email: user.email,
+                    },
+                    "Account locked due to failed logins"
+                );
 
                 return res.status(423).json({
                     success: false,
-                    message: "Account locked for 15 minutes"
-                })
+                    message:
+                        "Account locked for 15 minutes",
+                });
             }
+
+            logger.warn(
+                {
+                    userId: user.id,
+                    email: user.email,
+                    failedAttempts,
+                },
+                "Invalid password"
+            );
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Invalid credentials",
+            });
         }
 
         await pool.query(
-            `UPDATE users SET failed_attempts = $1 WHERE id = $2`,
-            [failedAttempts, user, id]
-        )
-        logger.warn({
-            userId: user.id,
-            email: user.id,
-            failedAttempts
-        }, "Invalid password")
-
-        return res.status(401).json({
-            success: false,
-            message: "Invalid cretentials",
-        })
-
-        await pool.query(
-        ` UPDATE users SET failed_attempts = 0,account_locked_until = NULL WHERE id = $1
-         `,
+            `
+      UPDATE users
+      SET
+        failed_attempts = 0,
+        account_locked_until = NULL
+      WHERE id = $1
+      `,
             [user.id]
         );
-        
-        const accessToken = generateAccessToken(user)
 
-        const refreshToken = generateRefreshToken(user)
+        const accessToken =
+            generateAccessToken(user);
+
+        const refreshToken =
+            generateRefreshToken(user);
 
         await pool.query(
-            'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'7 days\')',
-            [user.id, refreshToken]
-        )
+            `
+      INSERT INTO refresh_tokens
+      (
+        user_id,
+        token,
+        expires_at
+      )
+      VALUES
+      (
+        $1,
+        $2,
+        NOW() + INTERVAL '7 days'
+      )
+      `,
+            [
+                user.id,
+                refreshToken,
+            ]
+        );
 
-        logger.info({
-            userId: user.id,
-            email,
-        }, "User logged in successfully")
+        logger.info(
+            {
+                userId: user.id,
+                email: user.email,
+            },
+            "User logged in successfully"
+        );
 
         return res.status(200).json({
             success: true,
@@ -175,8 +230,7 @@ const login = async (req, res) => {
                 email: user.email,
                 role: user.role,
             },
-        })
-
+        });
     } catch (error) {
         logger.error(
             {
@@ -191,7 +245,7 @@ const login = async (req, res) => {
                 "Internal server error",
         });
     }
-}
+};
 
 const refreshToken = async (req, res) => {
     try {
