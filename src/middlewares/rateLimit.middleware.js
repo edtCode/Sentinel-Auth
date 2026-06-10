@@ -1,5 +1,4 @@
 const rateLimit = require("express-rate-limit")
-const { success } = require("zod")
 
 const loginLimiter = 
    rateLimit({
