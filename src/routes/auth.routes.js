@@ -8,9 +8,9 @@ const validate = require('../middlewares/validate.middleware')
 
 const { registerSchema, loginSchema, logoutSchema, refreshTokenSchema } = require('../validators/auth.validator')
 
-const { loginLimiter } = require('../middlewares/rateLimit.middleware')
+const { loginLimiter, registerLimiter } = require('../middlewares/rateLimit.middleware')
 
-router.post("/register", validate(registerSchema), register);
+router.post("/register",registerLimiter, validate(registerSchema), register);
 
 router.post("/login",loginLimiter, validate(loginSchema), login)
 
