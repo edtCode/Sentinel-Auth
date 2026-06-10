@@ -33,4 +33,23 @@ const loginLimiter =
     legacyHeaders: false,
    })
 
-   module.exports = { loginLimiter, registerLimiter }
+const refreshTokenLimiter = 
+rateLimit({
+    windowMs: 15 * 60 * 1000,
+
+    max: 20,
+
+    message:{
+        success: false,
+        message: "Too many refresh request. Try again later"
+    },
+
+    standardHeader: true,
+
+    legacyHeaders: false,
+})
+
+   module.exports =
+    { loginLimiter,
+      registerLimiter,
+      refreshTokenLimiter }
