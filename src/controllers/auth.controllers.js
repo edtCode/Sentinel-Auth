@@ -74,6 +74,13 @@ const login = async (req, res) => {
         );
 
         if (userResult.rows.length === 0) {
+
+            await pool.query(
+                'INSERT INTO failed_login_logs (email,  ip_address, user_agent, reason) VALUES ($1, $2, $3, $4)',
+
+                [email, req.ip, req.get("User-Agent"), "User not found"]
+            )
+
             logger.warn(
                 { email },
                 "Login failed: User not found"
@@ -92,6 +99,12 @@ const login = async (req, res) => {
             new Date(user.account_locked_until) >
             new Date()
         ) {
+
+            await pool.query(
+                `INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
+
+                [email, req.ip, req.get("User-Agent"), "Account locked"]
+            )
             logger.warn(
                 {
                     userId: user.id,
@@ -116,6 +129,11 @@ const login = async (req, res) => {
         if (!passwordValid) {
             const failedAttempts =
                 user.failed_attempts + 1;
+            
+
+            await pool.query(`INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
+                [ email, req.ip, req.get("User-Agent"), "Invalid password"]
+            )
 
             await pool.query(
                 `
