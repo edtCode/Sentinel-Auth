@@ -185,40 +185,27 @@ const login = async (req, res) => {
             [user.id]
         );
 
-        const accessToken =
-            generateAccessToken(user);
+        const accessToken = generateAccessToken(user)
 
-        const refreshToken =
-            generateRefreshToken(user);
+        const refreshToken = generateRefreshToken(user)
 
         await pool.query(
-            `
-      INSERT INTO refresh_tokens
-      (
-        user_id,
-        token,
-        expires_at
-      )
-      VALUES
-      (
-        $1,
-        $2,
-        NOW() + INTERVAL '7 days'
-      )
-      `,
-            [
-                user.id,
-                refreshToken,
-            ]
-        );
+            'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'7 days\')',
+            [user.id, refreshToken]
+        )
 
-        logger.info(
-            {
-                userId: user.id,
-                email: user.email,
-            },
-            "User logged in successfully"
-        );
+        await pool.query(
+            `INSERT INTO login_logs (user_id, ip_address, user_agent) VALUES($1,$2,$3)`,
+
+            [user.id, req.ip, req.get("User-Agent")]
+        )
+
+        logger.info({
+            userId: user.id,
+            email,
+            ip: req.ip,
+
+        }, "User logged in successfully")
 
         return res.status(200).json({
             success: true,
