@@ -7,6 +7,7 @@ const logger = require('../utils/logger')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
 
 const crypto = require("crypto")
+const { success } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -456,6 +457,31 @@ const forgetPassword = async(req,res)=>{
    }
 }
 
+const resetPassword = async(req,res)=>{
+    try {
+        const { token,newPassword } = req.body
+
+        const tokenResult = await pool.query(
+            `SELECT * FROM password_reset_tokens where token = $1`,
+            [token]
+        )
+
+        if(tokenResult.rows.length === 0){
+            logger.warn({
+                token,
+                ip: req.ip
+            })
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid reset token"
+            })
+        }
+        
+    } catch (error) {
+        
+    }
+}
 module.exports = {
     register,
     login,
