@@ -27,10 +27,16 @@ const forgetPasswordSchema = z.object({
   email: z.string().email()
 })
 
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8)
+})
+
 module.exports = {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
   logoutSchema,
   forgetPasswordSchema,
+  resetPasswordSchema,
 }
