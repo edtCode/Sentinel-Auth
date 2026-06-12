@@ -477,6 +477,22 @@ const resetPassword = async(req,res)=>{
                 message: "Invalid reset token"
             })
         }
+
+        const resetToken = tokenResult.rows[0]
+
+        if(new Date(resetToken.expires_at) < new Date()){
+
+            logger.warn({
+                token
+            },"Reset token expired")
+        }
+
+        return res.status(400).json({
+            success: false,
+            message: "Reset token expired"
+        })
+
+        
         
     } catch (error) {
         
