@@ -1,16 +1,16 @@
-const { z, email } = require('zod')
+const { z } = require('zod')
 const { refreshToken } = require('../controllers/auth.controllers')
 
 const registerSchema = z.object({
-    name: z.string().min(3,"Name must be atleast 3 letters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(3,"Password must be atleast 3 digits").regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-      "Password must contain uppercase, lowercase, number and special character")
+  name: z.string().min(3, "Name must be atleast 3 letters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(3, "Password must be atleast 3 digits").regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+    "Password must contain uppercase, lowercase, number and special character")
 })
 
 const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(1,"Password must be provided")
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password must be provided")
 })
 
 const refreshTokenSchema =
@@ -20,12 +20,17 @@ const refreshTokenSchema =
 
 
 const logoutSchema = z.object({
-    refreshToken: z.string().min(1)
+  refreshToken: z.string().min(1)
+})
+
+const forgetPasswordSchema = z.object({
+  email: z.string().email()
 })
 
 module.exports = {
-    registerSchema,
-    loginSchema,
-    refreshTokenSchema,
-    logoutSchema,
+  registerSchema,
+  loginSchema,
+  refreshTokenSchema,
+  logoutSchema,
+  forgetPasswordSchema,
 }

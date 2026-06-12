@@ -2,13 +2,16 @@ const pool = require('../config/db')
 
 const { hashPassword, comparePassword } = require('../utils/hash')
 
-const logger = require('../utils/logger');
-const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
+const logger = require('../utils/logger')
+
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
+
+const crypto = require("crypto")
 
 const register = async (req, res) => {
     try {
 
-        const { name, email, password } = req.body;
+        const { name, email, password } = req.body
 
         const existingUser = await pool.query(
             'SELECT id FROM users WHERE email = $1',
@@ -129,10 +132,10 @@ const login = async (req, res) => {
         if (!passwordValid) {
             const failedAttempts =
                 user.failed_attempts + 1;
-            
+
 
             await pool.query(`INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
-                [ email, req.ip, req.get("User-Agent"), "Invalid password"]
+                [email, req.ip, req.get("User-Agent"), "Invalid password"]
             )
 
             await pool.query(
@@ -398,10 +401,66 @@ const getProfile = async (req, res) => {
     }
 }
 
+const forgetPassword = async(req,res)=>{
+   try {
+    const { email } = req.body
+    
+    const userResult = await pool.query(
+        `SELECT * FROM users WHERE email = $1`,
+          [email]
+    )
+
+    if(userResult.rows.length === 0){
+
+        logger.warn({
+            email,
+            ip: req.ip
+        },"Password reset request for non-existent email")
+
+        return res.status(200).json({
+            success: true,
+            message: "If the email exists, a reset link has been sent"
+        })
+    }
+
+    const user = userResult.rows[0]
+
+    const resetToken = crypto.randomBytes(32)
+                              .toString("hex")
+
+    await pool.query(
+        `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '1 hour')`,
+        [user.id, resetToken]
+    )
+    logger.info({
+        userId: user.id,
+        email: user.email,
+        ip: req.ip,
+    },"Password reset token generated")
+
+    return res.status(200).json({
+        success: true,
+        message: "Password reset token generated",
+        resetToken,
+    })
+   } catch (error) {
+    
+    logger.error({
+        error: error.message
+    },"Forget password failed")
+
+    return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+    })
+   }
+}
+
 module.exports = {
     register,
     login,
     refreshToken,
     logout,
-    getProfile
+    getProfile,
+    forgetPassword,
 }
