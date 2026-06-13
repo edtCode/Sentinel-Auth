@@ -2,11 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 
-const { register, login, refreshToken, logout, forgetPassword } = require('../controllers/auth.controllers')
+const { register, login, refreshToken, logout, forgetPassword, resetPassword } = require('../controllers/auth.controllers')
 
 const validate = require('../middlewares/validate.middleware')
 
-const { registerSchema, loginSchema, logoutSchema, refreshTokenSchema, forgetPasswordSchema } = require('../validators/auth.validator')
+const { registerSchema, loginSchema, logoutSchema, refreshTokenSchema, forgetPasswordSchema, resetPasswordSchema } = require('../validators/auth.validator')
 
 const { loginLimiter, registerLimiter, refreshTokenLimiter } = require('../middlewares/rateLimit.middleware')
 
@@ -19,5 +19,7 @@ router.post("/refresh-token",refreshTokenLimiter,validate(refreshTokenSchema),re
 router.post("/logout",validate(logoutSchema),logout)
 
 router.post("/forget-password",validate(forgetPasswordSchema),forgetPassword)
+
+router.post("/reset-password",validate(resetPasswordSchema),resetPassword)
 
 module.exports = router;

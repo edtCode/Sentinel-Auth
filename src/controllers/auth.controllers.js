@@ -137,7 +137,7 @@ const login = async (req, res) => {
 
             await pool.query(
                 `INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
-                
+
                 [email, req.ip, req.get("User-Agent"), "Invalid password"]
             )
 
@@ -420,6 +420,7 @@ const forgetPassword = async (req, res) => {
             `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '1 hour')`,
             [user.id, resetToken]
         )
+
         logger.info({
             userId: user.id,
             email: user.email,
@@ -447,7 +448,7 @@ const forgetPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body
-
+    
         const tokenResult = await pool.query(
             `SELECT * FROM password_reset_tokens where token = $1`,
             [token]
@@ -467,22 +468,57 @@ const resetPassword = async (req, res) => {
 
         const resetToken = tokenResult.rows[0]
 
-        if (new Date(resetToken.expires_at) < new Date()) {
+       if (new Date(resetToken.expires_at) < new Date()) {
 
             logger.warn({
                 token
             }, "Reset token expired")
-        }
-
-        return res.status(400).json({
+            
+             return res.status(400).json({
             success: false,
             message: "Reset token expired"
         })
 
+        }
+       
+        const hashedPassword = await hashPassword(newPassword)
+
+        await pool.query(
+            `UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2 `,
+            [ hashedPassword,resetToken.user_id ]
+        )
+
+        await pool.query(
+            `DELETE FROM password_reset_tokens WHERE token = $1`,
+            [token]
+        )
+
+        await pool.query(
+            `INSERT INTO password_change_logs ( user_id ) VALUES ( $1 )`,
+            [resetToken.user_id]
+        )
+
+        logger.info({
+            userId: resetToken.user_id,
+            ip: req.ip
+        },"Password reset successful ")
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successful"
+        })
 
 
     } catch (error) {
 
+        logger.error({
+            error: error.message
+        },"Reset password failed")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
     }
 }
 module.exports = {
@@ -492,4 +528,5 @@ module.exports = {
     logout,
     getProfile,
     forgetPassword,
+    resetPassword
 }
