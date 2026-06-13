@@ -135,34 +135,25 @@ const login = async (req, res) => {
                 user.failed_attempts + 1;
 
 
-            await pool.query(`INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
+            await pool.query(
+                `INSERT INTO failed_login_logs ( email, ip_address, user_agent, reason) VALUES ( $1, $2, $3, $4)`,
+                
                 [email, req.ip, req.get("User-Agent"), "Invalid password"]
             )
 
             await pool.query(
-                `
-        UPDATE users
-        SET failed_attempts = $1
-        WHERE id = $2
-        `,
-                [
-                    failedAttempts,
-                    user.id,
-                ]
+
+                `UPDATE users SET failed_attempts = $1 WHERE id = $2`,
+
+                [failedAttempts, user.id,]
             );
 
             if (failedAttempts >= 5) {
                 await pool.query(
-                    `
-          UPDATE users
-          SET
-            failed_attempts = 0,
-            account_locked_until =
-              NOW() +
-              INTERVAL '15 minutes'
-          WHERE id = $1
-          `,
+
+                    ` UPDATE users SET failed_attempts = 0, account_locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $1 `,
                     [user.id]
+
                 );
 
                 logger.warn(
@@ -197,14 +188,10 @@ const login = async (req, res) => {
         }
 
         await pool.query(
-            `
-      UPDATE users
-      SET
-        failed_attempts = 0,
-        account_locked_until = NULL
-      WHERE id = $1
-      `,
+
+            `UPDATE users SET failed_attempts = 0, account_locked_until = NULL WHERE id = $1 `,
             [user.id]
+
         );
 
         const accessToken = generateAccessToken(user)
@@ -402,71 +389,71 @@ const getProfile = async (req, res) => {
     }
 }
 
-const forgetPassword = async(req,res)=>{
-   try {
-    const { email } = req.body
-    
-    const userResult = await pool.query(
-        `SELECT * FROM users WHERE email = $1`,
-          [email]
-    )
+const forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body
 
-    if(userResult.rows.length === 0){
+        const userResult = await pool.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email]
+        )
 
-        logger.warn({
-            email,
-            ip: req.ip
-        },"Password reset request for non-existent email")
+        if (userResult.rows.length === 0) {
+
+            logger.warn({
+                email,
+                ip: req.ip
+            }, "Password reset request for non-existent email")
+
+            return res.status(200).json({
+                success: true,
+                message: "If the email exists, a reset link has been sent"
+            })
+        }
+
+        const user = userResult.rows[0]
+
+        const resetToken = crypto.randomBytes(32)
+            .toString("hex")
+
+        await pool.query(
+            `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '1 hour')`,
+            [user.id, resetToken]
+        )
+        logger.info({
+            userId: user.id,
+            email: user.email,
+            ip: req.ip,
+        }, "Password reset token generated")
 
         return res.status(200).json({
             success: true,
-            message: "If the email exists, a reset link has been sent"
+            message: "Password reset token generated",
+            resetToken,
+        })
+    } catch (error) {
+
+        logger.error({
+            error: error.message
+        }, "Forget password failed")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
         })
     }
-
-    const user = userResult.rows[0]
-
-    const resetToken = crypto.randomBytes(32)
-                              .toString("hex")
-
-    await pool.query(
-        `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '1 hour')`,
-        [user.id, resetToken]
-    )
-    logger.info({
-        userId: user.id,
-        email: user.email,
-        ip: req.ip,
-    },"Password reset token generated")
-
-    return res.status(200).json({
-        success: true,
-        message: "Password reset token generated",
-        resetToken,
-    })
-   } catch (error) {
-    
-    logger.error({
-        error: error.message
-    },"Forget password failed")
-
-    return res.status(500).json({
-        success: false,
-        message: "Internal server error"
-    })
-   }
 }
 
-const resetPassword = async(req,res)=>{
+const resetPassword = async (req, res) => {
     try {
-        const { token,newPassword } = req.body
+        const { token, newPassword } = req.body
 
         const tokenResult = await pool.query(
             `SELECT * FROM password_reset_tokens where token = $1`,
             [token]
         )
 
-        if(tokenResult.rows.length === 0){
+        if (tokenResult.rows.length === 0) {
             logger.warn({
                 token,
                 ip: req.ip
@@ -480,11 +467,11 @@ const resetPassword = async(req,res)=>{
 
         const resetToken = tokenResult.rows[0]
 
-        if(new Date(resetToken.expires_at) < new Date()){
+        if (new Date(resetToken.expires_at) < new Date()) {
 
             logger.warn({
                 token
-            },"Reset token expired")
+            }, "Reset token expired")
         }
 
         return res.status(400).json({
@@ -492,10 +479,10 @@ const resetPassword = async(req,res)=>{
             message: "Reset token expired"
         })
 
-        
-        
+
+
     } catch (error) {
-        
+
     }
 }
 module.exports = {
