@@ -7,7 +7,6 @@ const logger = require('../utils/logger')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
 
 const crypto = require("crypto")
-const { success, flattenError } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -40,14 +39,22 @@ const register = async (req, res) => {
             [name, email, hashedPassword]
         )
 
+        const verificationToken = crypto.randomBytes(32).toString("hex")
+
+        await pool.query(
+            `INSERT INTO email_verification_tokens( user_id, token, expires_at) VALUES ( $1,$2 , NOW() + INTERVAL '24 hours')`,
+            [ newUser.rows[0].id,verificationToken ]
+        )
+
         logger.info({
             user_id: newUser.rows[0].id,
             email
-        })
+        },"Email verification token generated")
 
         return res.status(201).json({
             success: true,
             message: "User registered successfully",
+            verificationToken,
             user: newUser.rows[0]
         })
 
