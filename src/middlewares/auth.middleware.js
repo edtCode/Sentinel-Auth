@@ -22,9 +22,9 @@ const authenticate = async (req, res, next) => {
                 message: "Access token not found"
             })
         }
-
+        
         const decoded = verifyAccessToken(token)
-
+       
         const userResult = await pool.query(
             `SELECT id,name,email,role,is_verified FROM users WHERE id = $1`,
             [decoded.id]

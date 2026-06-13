@@ -7,7 +7,7 @@ const logger = require('../utils/logger')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
 
 const crypto = require("crypto")
-const { success } = require('zod')
+const { success, flattenError } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -521,6 +521,80 @@ const resetPassword = async (req, res) => {
         })
     }
 }
+
+const changePassword = async(req,res)=>{
+    try {
+
+        const { currentPassword,newPassword } = req.body
+
+        const userResult = await pool.query(
+            `SELECT * FROM users WHERE id = $1`,
+            [req.user.id]
+        )
+
+        if(userResult.rows.length === 0){
+            logger.warn({
+                userId: req.user.id
+            },"User not found")
+
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+        
+        const user = userResult.rows[0]
+
+        const passwordValid = await comparePassword(currentPassword,user.password)
+
+        if(!passwordValid){
+            logger.warn({
+                userId: user.id,
+                ip: req.ip,
+            },"Incorrect current password")
+
+            return res.status(401).json({
+                success: false,
+                message: "Current password is incorrect"
+            })
+        }
+
+        const hashedPassword = await hashPassword(newPassword)
+
+        await pool.query(
+            `UPDATE users SET password = $1 , updated_at = NOW() WHERE id = $2`,
+            [ hashedPassword,user.id ]
+        )
+
+        await pool.query(
+            `INSERT INTO password_change_logs ( user_id ) VALUES( $1 )`,
+            [user.id]
+        )
+
+        logger.info({
+            userId: user.id,
+            ip: req.ip
+        },"Password changed successfully")
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        })
+
+    } catch (error) {
+
+         console.error(error.stack);
+        logger.error({
+            error: error.message
+        },"Change password failed")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+ }
+
 module.exports = {
     register,
     login,
@@ -528,5 +602,6 @@ module.exports = {
     logout,
     getProfile,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    changePassword,
 }
