@@ -37,6 +37,10 @@ const changePasswordSchema = z.object({
    newPassword : z.string().min(8),
 })
 
+const verifyEmailSchema = z.object({
+  token: z.string().min(1)
+})
+
 module.exports = {
   registerSchema,
   loginSchema,
