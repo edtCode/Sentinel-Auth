@@ -7,6 +7,7 @@ const logger = require('../utils/logger')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
 
 const crypto = require("crypto")
+const { success } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -599,6 +600,33 @@ const changePassword = async(req,res)=>{
             success: false,
             message: "Internal server error"
         })
+    }
+ }
+
+ const verifyEmail = async(req,res)=>{
+    try {
+        const { token } = req.body
+
+    const tokenResult= await pool.query(
+        `SELECT * FROM email_verification_tokens WHERE token = $1`,
+        [token]
+    )
+    if(tokenResult.rows.length === 0){
+
+        logger.warn({
+            token,
+        },"Invalid verification token")
+
+        return res.status(400).json({
+            success: false,
+            message: "Invalid verification token"
+        })
+      
+        
+        
+    }
+    } catch (error) {
+        
     }
  }
 
