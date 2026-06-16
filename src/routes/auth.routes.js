@@ -26,6 +26,6 @@ router.post("/reset-password",validate(resetPasswordSchema),resetPassword)
 
 router.post("/change-password",authenticate,validate(changePasswordSchema),changePassword)
 
-router.post("verify-email",validate(verifyEmailSchema),verifyEmail)
+router.post("/verify-email",validate(verifyEmailSchema),verifyEmail)
 
 module.exports = router;

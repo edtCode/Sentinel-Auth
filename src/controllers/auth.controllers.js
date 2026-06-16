@@ -36,8 +36,8 @@ const register = async (req, res) => {
         const hashedPassword = await hashPassword(password);
 
         const newUser = await pool.query(
-            'INSERT INTO users ( name,email,password ) VALUES ( $1,$2,$3 ) RETURNING id,name,email,role,is_verified,created_at',
-            [name, email, hashedPassword]
+            'INSERT INTO users ( name,email,password,is_verified ) VALUES ( $1,$2,$3,$4 ) RETURNING id,name,email,role,is_verified,created_at',
+            [name, email, hashedPassword, false]
         )
 
         const verificationToken = crypto.randomBytes(32).toString("hex")
@@ -105,6 +105,19 @@ const login = async (req, res) => {
         }
 
         const user = userResult.rows[0];
+
+        if(!user.is_verified){
+
+            logger.warn({
+                userId: user.id,
+                email: user.email
+            }<"Login failed : Email is not verified")
+
+            return res.status(401).json({
+                success: false,
+                message: "Please verify you login first"
+            })
+        }
 
         if (
             user.account_locked_until &&
@@ -621,7 +634,7 @@ const changePassword = async(req,res)=>{
             success: false,
             message: "Invalid verification token"
         })
-      
+    }
         const verificationToken = tokenResult.rows[0]
 
         if(new Date(verificationToken.expires_at) < new Date()){
@@ -656,7 +669,7 @@ const changePassword = async(req,res)=>{
         })
 
     }
-    } catch (error) {
+        catch (error) {
         logger.error({
             error: error.message
         },"Email verification failed")
