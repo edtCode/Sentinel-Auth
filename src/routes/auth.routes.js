@@ -4,11 +4,11 @@ const router = express.Router();
 
 const authenticate = require('../middlewares/auth.middleware')
 
-const { register, login, refreshToken, logout, forgetPassword, resetPassword, changePassword, verifyEmail } = require('../controllers/auth.controllers')
+const { register, login, refreshToken, logout, forgetPassword, resetPassword, changePassword, verifyEmail, resendVerification } = require('../controllers/auth.controllers')
 
 const validate = require('../middlewares/validate.middleware')
 
-const { registerSchema, loginSchema, logoutSchema, refreshTokenSchema, forgetPasswordSchema, resetPasswordSchema, changePasswordSchema, verifyEmailSchema } = require('../validators/auth.validator')
+const { registerSchema, loginSchema, logoutSchema, refreshTokenSchema, forgetPasswordSchema, resetPasswordSchema, changePasswordSchema, verifyEmailSchema, resendVerificationSchema } = require('../validators/auth.validator')
 
 const { loginLimiter, registerLimiter, refreshTokenLimiter } = require('../middlewares/rateLimit.middleware')
 
@@ -27,5 +27,7 @@ router.post("/reset-password",validate(resetPasswordSchema),resetPassword)
 router.post("/change-password",authenticate,validate(changePasswordSchema),changePassword)
 
 router.post("/verify-email",validate(verifyEmailSchema),verifyEmail)
+
+router.post("/resend-verification",validate(resendVerificationSchema),resendVerification)
 
 module.exports = router;

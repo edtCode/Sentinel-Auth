@@ -41,6 +41,10 @@ const verifyEmailSchema = z.object({
   token: z.string().min(1)
 })
 
+const resendVerificationSchema = z.object({
+    email: z.string().email()
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -49,5 +53,6 @@ module.exports = {
   forgetPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
-  verifyEmailSchema
+  verifyEmailSchema,
+  resendVerificationSchema
 }

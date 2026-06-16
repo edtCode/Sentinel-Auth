@@ -7,7 +7,6 @@ const logger = require('../utils/logger')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt')
 
 const crypto = require("crypto")
-const { success } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -681,6 +680,72 @@ const changePassword = async(req,res)=>{
     }
  }
 
+ const resendVerification = async(req,res)=>{
+    try {
+        const {email} = req.body
+
+    const userResult = await pool.query(
+        `SELECT * FROM users WHERE email = $1`,
+        [email]
+    )
+
+    if(userResult.rows.length === 0){
+        logger.warn({
+            email,
+        },"Verification request from non-existing email")
+
+        return res.status(200).json({
+            success: true,
+            message: "Verification email sent"
+        })
+    }
+
+    const user = userResult.rows[0]
+     if(user.is_verified){
+        logger.info({
+            userId: user.id,
+            email: user.email
+        },"Email already verified")
+
+        return res.status(400).json({
+            success: false,
+            message: "Email is already verified"
+        })
+     }
+
+     await pool.query(
+        `DELETE FROM email_verification_tokens WHERE user_id = $1`,
+        [user.id]
+     )
+
+     const verificationToken = crypto.randomBytes(32).toString("hex")
+
+     await pool.query(
+        `INSERT INTO email_verification_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '24 hours')`,
+        [user.id,verificationToken]
+     )
+     logger.warn({
+        userId: user.id,
+        email: user.email
+     },"Verification token resent")
+
+     return res.status(200).json({
+        success: true,
+        message: "Verification email sent",
+        verificationToken
+     })
+    } catch (error) {
+        logger.error({
+            error: error.message
+        },"Resend verification failed")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+ }
+
 module.exports = {
     register,
     login,
@@ -691,4 +756,5 @@ module.exports = {
     resetPassword,
     changePassword,
     verifyEmail,
+    resendVerification
 }
