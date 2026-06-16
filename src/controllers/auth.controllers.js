@@ -9,7 +9,8 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 const crypto = require("crypto")
 
 const createAuditLog = require('../utils/audit')
-const { success } = require('zod')
+
+const SECURITY = require("../config/security")
 
 const register = async (req, res) => {
     try {
@@ -180,10 +181,10 @@ const login = async (req, res) => {
                 [failedAttempts, user.id,]
             );
 
-            if (failedAttempts >= 5) {
+            if (failedAttempts >= SECURITY.MAX_LOGIN_ATTEMPTS) {
                 await pool.query(
 
-                    ` UPDATE users SET failed_attempts = 0, account_locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $1 `,
+                    ` UPDATE users SET failed_attempts = 0, account_locked_until = NOW() + INTERVAL '${SECURITY.ACCOUNT_LOCK_MINUTES} minutes' WHERE id = $1 `,
                     [user.id]
 
                 );
@@ -357,7 +358,7 @@ const refreshToken = async (req, res) => {
         const newRefreshToken = generateRefreshToken(user)
 
         await pool.query(
-            `INSERT INTO refresh_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '7 days')`,
+            `INSERT INTO refresh_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '${SECURITY.REFRESH_TOKEN_DAYS} days')`,
             [user.id,newRefreshToken]
         )
 
@@ -497,7 +498,7 @@ const forgetPassword = async (req, res) => {
             .toString("hex")
 
         await pool.query(
-            `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '1 hour')`,
+            `INSERT INTO password_reset_tokens ( user_id,token,expires_at ) VALUES ( $1, $2, NOW() + INTERVAL '${SECURITY.PASSWORD_RESET_HOURS} hours')`,
             [user.id, resetToken]
         )
 
@@ -809,7 +810,7 @@ const resendVerification = async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString("hex")
 
         await pool.query(
-            `INSERT INTO email_verification_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '24 hours')`,
+            `INSERT INTO email_verification_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '${SECURITY.EMAIL_VERIFICATION_HOURS} hours')`,
             [user.id, verificationToken]
         )
         logger.warn({
