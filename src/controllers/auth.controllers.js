@@ -347,15 +347,27 @@ const refreshToken = async (req, res) => {
 
         const user = userResult.rows[0]
 
-        const accessToken = generateAccessToken(user)
-
-        logger.info(
-            'Access token refreshed'
+        await pool.query(
+            `DELETE FROM refresh_tokens WHERE token = $1`,
+            [refreshToken]
         )
+
+        const accessToken = generateAccessToken(user)
+        const newRefreshToken = generateRefreshToken(user)
+
+        await pool.query(
+            `INSERT INTO refresh_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '7 days')`,
+            [user.id,newRefreshToken]
+        )
+
+        logger.info({
+            userId: user.id,
+            ip: req.ip
+        },"Refresh token rotated")
 
         await createAuditLog({
             userId: user.id,
-            eventType: "REFRESH_TOKEN_USED",
+            eventType: "REFRESH_TOKEN_ROTATED",
             ipAddress: req.ip,
             userAgent: req.headers["user-agent"]
         });
@@ -363,6 +375,7 @@ const refreshToken = async (req, res) => {
         return res.status(200).json({
             success: true,
             accessToken,
+            refreshToken: newRefreshToken
         })
 
     } catch (error) {
