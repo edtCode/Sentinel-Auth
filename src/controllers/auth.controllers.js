@@ -622,11 +622,49 @@ const changePassword = async(req,res)=>{
             message: "Invalid verification token"
         })
       
-        
-        
+        const verificationToken = tokenResult.rows[0]
+
+        if(new Date(verificationToken.expires_at) < new Date()){
+            
+            logger.warn({
+                token,
+            },"Verification token expired")
+
+            return res.status(400).json({
+                success: false,
+                message: "Verification token expired"
+            })
+        }
+
+        await pool.query(
+            `UPDATE users SET is_verified = true WHERE id =  $1`,
+            [verificationToken.user_id]
+        )
+
+        await pool.query(
+            `DELETE FROM email_verification_tokens WHERE token = $1`,
+            [token]
+        )
+
+        logger.info({
+            userId: verificationToken.user_id,
+        },"Email verified succesfully")
+
+        return res.status(200).json({
+            success: true,
+            message: "Email verified succesfully"
+        })
+
     }
     } catch (error) {
-        
+        logger.error({
+            error: error.message
+        },"Email verification failed")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
     }
  }
 
@@ -639,4 +677,5 @@ module.exports = {
     forgetPassword,
     resetPassword,
     changePassword,
+    verifyEmail,
 }

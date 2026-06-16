@@ -49,4 +49,5 @@ module.exports = {
   forgetPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  verifyEmailSchema
 }
