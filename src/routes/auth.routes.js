@@ -4,7 +4,7 @@ const router = express.Router();
 
 const authenticate = require('../middlewares/auth.middleware')
 
-const { register, login, refreshToken, logout, forgetPassword, resetPassword, changePassword, verifyEmail, resendVerification } = require('../controllers/auth.controllers')
+const { register, login, refreshToken, logout, forgetPassword, resetPassword, changePassword, verifyEmail, resendVerification, logoutAllDevices } = require('../controllers/auth.controllers')
 
 const validate = require('../middlewares/validate.middleware')
 
@@ -29,5 +29,7 @@ router.post("/change-password",authenticate,validate(changePasswordSchema),chang
 router.post("/verify-email",validate(verifyEmailSchema),verifyEmail)
 
 router.post("/resend-verification",validate(resendVerificationSchema),resendVerification)
+
+router.post("/logout-all",authenticate,logoutAllDevices)
 
 module.exports = router;

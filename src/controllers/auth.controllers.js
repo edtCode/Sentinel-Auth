@@ -9,6 +9,7 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 const crypto = require("crypto")
 
 const createAuditLog = require('../utils/audit')
+const { success } = require('zod')
 
 const register = async (req, res) => {
     try {
@@ -840,11 +841,51 @@ const resendVerification = async (req, res) => {
     }
 }
 
+const logoutAllDevices = async(req,res) =>{
+    try {
+        const result = await pool.query(
+            `DELETE FROM refresh_tokens WHERE user_id = $1 RETURNING id`,
+            [req.user.id]
+        )
+
+        logger.info({
+            userId: req.user.id,
+            deletedTokens: result.rowCount,
+            ip: req.ip
+        },"Logged out from all devices")
+
+        await createAuditLog({
+            userId: req.user.id,
+            eventType: "LOGOUT_ALL_DEVICES",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+            metadata: {
+                deletedTokens: result.rowCount
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out from all devices"
+        })
+    } catch (error) {
+        logger.error({
+            error: error.message
+        },"Logged out from all devices")
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+}
+
 module.exports = {
     register,
     login,
     refreshToken,
     logout,
+    logoutAllDevices,
     getProfile,
     forgetPassword,
     resetPassword,
