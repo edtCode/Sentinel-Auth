@@ -8,6 +8,8 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 
 const crypto = require("crypto")
 
+const createAuditLog = require('../utils/audit')
+
 const register = async (req, res) => {
     try {
 
@@ -43,13 +45,23 @@ const register = async (req, res) => {
 
         await pool.query(
             `INSERT INTO email_verification_tokens( user_id, token, expires_at) VALUES ( $1,$2 , NOW() + INTERVAL '24 hours')`,
-            [ newUser.rows[0].id,verificationToken ]
+            [newUser.rows[0].id, verificationToken]
         )
 
         logger.info({
             user_id: newUser.rows[0].id,
             email
-        },"Email verification token generated")
+        }, "Email verification token generated")
+
+        await createAuditLog({
+            userId: newUser.rows[0].id,
+            eventType: "REGISTER",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+            metadata: {
+                email: newUser.rows[0].email
+            }
+        });
 
         return res.status(201).json({
             success: true,
@@ -57,7 +69,6 @@ const register = async (req, res) => {
             verificationToken,
             user: newUser.rows[0]
         })
-
 
     } catch (error) {
 
@@ -105,12 +116,12 @@ const login = async (req, res) => {
 
         const user = userResult.rows[0];
 
-        if(!user.is_verified){
+        if (!user.is_verified) {
 
             logger.warn({
                 userId: user.id,
                 email: user.email
-            }<"Login failed : Email is not verified")
+            }, "Login failed : Email is not verified")
 
             return res.status(401).json({
                 success: false,
@@ -184,7 +195,14 @@ const login = async (req, res) => {
                     "Account locked due to failed logins"
                 );
 
-                return res.status(423).json({
+                await createAuditLog({
+                    userId: user.id,
+                    eventType: "ACCOUNT_LOCKED",
+                    ipAddress: req.ip,
+                    userAgent: req.headers["user-agent"]
+                });
+
+                return res.status(403).json({
                     success: false,
                     message:
                         "Account locked for 15 minutes",
@@ -199,6 +217,13 @@ const login = async (req, res) => {
                 },
                 "Invalid password"
             );
+
+            await createAuditLog({
+                userId: user.id,
+                eventType: "LOGIN_FAILED",
+                ipAddress: req.ip,
+                userAgent: req.headers["user-agent"]
+            });
 
             return res.status(401).json({
                 success: false,
@@ -235,6 +260,13 @@ const login = async (req, res) => {
             ip: req.ip,
 
         }, "User logged in successfully")
+
+        await createAuditLog({
+            userId: user.id,
+            eventType: "LOGIN",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             success: true,
@@ -321,6 +353,13 @@ const refreshToken = async (req, res) => {
             'Access token refreshed'
         )
 
+        await createAuditLog({
+            userId: user.id,
+            eventType: "REFRESH_TOKEN_USED",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
+
         return res.status(200).json({
             success: true,
             accessToken,
@@ -363,6 +402,13 @@ const logout = async (req, res) => {
         logger.info(
             "Logout successfully"
         )
+
+        await createAuditLog({
+            userId: req.user.id,
+            eventType: "LOGOUT",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             message: true,
@@ -447,6 +493,13 @@ const forgetPassword = async (req, res) => {
             ip: req.ip,
         }, "Password reset token generated")
 
+        await createAuditLog({
+            userId: user.id,
+            eventType: "PASSWORD_RESET_REQUESTED",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
+
         return res.status(200).json({
             success: true,
             message: "Password reset token generated",
@@ -468,7 +521,7 @@ const forgetPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body
-    
+
         const tokenResult = await pool.query(
             `SELECT * FROM password_reset_tokens where token = $1`,
             [token]
@@ -488,24 +541,24 @@ const resetPassword = async (req, res) => {
 
         const resetToken = tokenResult.rows[0]
 
-       if (new Date(resetToken.expires_at) < new Date()) {
+        if (new Date(resetToken.expires_at) < new Date()) {
 
             logger.warn({
                 token
             }, "Reset token expired")
-            
-             return res.status(400).json({
-            success: false,
-            message: "Reset token expired"
-        })
+
+            return res.status(400).json({
+                success: false,
+                message: "Reset token expired"
+            })
 
         }
-       
+
         const hashedPassword = await hashPassword(newPassword)
 
         await pool.query(
             `UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2 `,
-            [ hashedPassword,resetToken.user_id ]
+            [hashedPassword, resetToken.user_id]
         )
 
         await pool.query(
@@ -521,7 +574,14 @@ const resetPassword = async (req, res) => {
         logger.info({
             userId: resetToken.user_id,
             ip: req.ip
-        },"Password reset successful ")
+        }, "Password reset successful ")
+
+        await createAuditLog({
+            userId: resetToken.user_id,
+            eventType: "PASSWORD_RESET_COMPLETED",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             success: true,
@@ -533,7 +593,7 @@ const resetPassword = async (req, res) => {
 
         logger.error({
             error: error.message
-        },"Reset password failed")
+        }, "Reset password failed")
 
         return res.status(500).json({
             success: false,
@@ -542,36 +602,36 @@ const resetPassword = async (req, res) => {
     }
 }
 
-const changePassword = async(req,res)=>{
+const changePassword = async (req, res) => {
     try {
 
-        const { currentPassword,newPassword } = req.body
+        const { currentPassword, newPassword } = req.body
 
         const userResult = await pool.query(
             `SELECT * FROM users WHERE id = $1`,
             [req.user.id]
         )
 
-        if(userResult.rows.length === 0){
+        if (userResult.rows.length === 0) {
             logger.warn({
                 userId: req.user.id
-            },"User not found")
+            }, "User not found")
 
             return res.status(404).json({
                 success: false,
                 message: "User not found"
             })
         }
-        
+
         const user = userResult.rows[0]
 
-        const passwordValid = await comparePassword(currentPassword,user.password)
+        const passwordValid = await comparePassword(currentPassword, user.password)
 
-        if(!passwordValid){
+        if (!passwordValid) {
             logger.warn({
                 userId: user.id,
                 ip: req.ip,
-            },"Incorrect current password")
+            }, "Incorrect current password")
 
             return res.status(401).json({
                 success: false,
@@ -583,7 +643,7 @@ const changePassword = async(req,res)=>{
 
         await pool.query(
             `UPDATE users SET password = $1 , updated_at = NOW() WHERE id = $2`,
-            [ hashedPassword,user.id ]
+            [hashedPassword, user.id]
         )
 
         await pool.query(
@@ -594,7 +654,14 @@ const changePassword = async(req,res)=>{
         logger.info({
             userId: user.id,
             ip: req.ip
-        },"Password changed successfully")
+        }, "Password changed successfully")
+
+        await createAuditLog({
+            userId: req.user.id,
+            eventType: "PASSWORD_CHANGED",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             success: true,
@@ -603,44 +670,44 @@ const changePassword = async(req,res)=>{
 
     } catch (error) {
 
-         console.error(error.stack);
+        console.error(error.stack);
         logger.error({
             error: error.message
-        },"Change password failed")
+        }, "Change password failed")
 
         return res.status(500).json({
             success: false,
             message: "Internal server error"
         })
     }
- }
+}
 
- const verifyEmail = async(req,res)=>{
+const verifyEmail = async (req, res) => {
     try {
         const { token } = req.body
 
-    const tokenResult= await pool.query(
-        `SELECT * FROM email_verification_tokens WHERE token = $1`,
-        [token]
-    )
-    if(tokenResult.rows.length === 0){
+        const tokenResult = await pool.query(
+            `SELECT * FROM email_verification_tokens WHERE token = $1`,
+            [token]
+        )
+        if (tokenResult.rows.length === 0) {
 
-        logger.warn({
-            token,
-        },"Invalid verification token")
-
-        return res.status(400).json({
-            success: false,
-            message: "Invalid verification token"
-        })
-    }
-        const verificationToken = tokenResult.rows[0]
-
-        if(new Date(verificationToken.expires_at) < new Date()){
-            
             logger.warn({
                 token,
-            },"Verification token expired")
+            }, "Invalid verification token")
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid verification token"
+            })
+        }
+        const verificationToken = tokenResult.rows[0]
+
+        if (new Date(verificationToken.expires_at) < new Date()) {
+
+            logger.warn({
+                token,
+            }, "Verification token expired")
 
             return res.status(400).json({
                 success: false,
@@ -660,7 +727,14 @@ const changePassword = async(req,res)=>{
 
         logger.info({
             userId: verificationToken.user_id,
-        },"Email verified succesfully")
+        }, "Email verified succesfully")
+
+        await createAuditLog({
+            userId: verificationToken.user_id,
+            eventType: "EMAIL_VERIFIED",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             success: true,
@@ -668,83 +742,90 @@ const changePassword = async(req,res)=>{
         })
 
     }
-        catch (error) {
+    catch (error) {
         logger.error({
             error: error.message
-        },"Email verification failed")
+        }, "Email verification failed")
 
         return res.status(500).json({
             success: false,
             message: "Internal server error"
         })
     }
- }
+}
 
- const resendVerification = async(req,res)=>{
+const resendVerification = async (req, res) => {
     try {
-        const {email} = req.body
+        const { email } = req.body
 
-    const userResult = await pool.query(
-        `SELECT * FROM users WHERE email = $1`,
-        [email]
-    )
+        const userResult = await pool.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email]
+        )
 
-    if(userResult.rows.length === 0){
+        if (userResult.rows.length === 0) {
+            logger.warn({
+                email,
+            }, "Verification request from non-existing email")
+
+            return res.status(200).json({
+                success: true,
+                message: "Verification email sent"
+            })
+        }
+
+        const user = userResult.rows[0]
+        if (user.is_verified) {
+            logger.info({
+                userId: user.id,
+                email: user.email
+            }, "Email already verified")
+
+            return res.status(400).json({
+                success: false,
+                message: "Email is already verified"
+            })
+        }
+
+        await pool.query(
+            `DELETE FROM email_verification_tokens WHERE user_id = $1`,
+            [user.id]
+        )
+
+        const verificationToken = crypto.randomBytes(32).toString("hex")
+
+        await pool.query(
+            `INSERT INTO email_verification_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '24 hours')`,
+            [user.id, verificationToken]
+        )
         logger.warn({
-            email,
-        },"Verification request from non-existing email")
+            userId: user.id,
+            email: user.email
+        }, "Verification token resent")
+
+        await createAuditLog({
+            userId: user.id,
+            eventType: "VERIFICATION_RESENT",
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
 
         return res.status(200).json({
             success: true,
-            message: "Verification email sent"
+            message: "Verification email sent",
+            verificationToken
         })
-    }
-
-    const user = userResult.rows[0]
-     if(user.is_verified){
-        logger.info({
-            userId: user.id,
-            email: user.email
-        },"Email already verified")
-
-        return res.status(400).json({
-            success: false,
-            message: "Email is already verified"
-        })
-     }
-
-     await pool.query(
-        `DELETE FROM email_verification_tokens WHERE user_id = $1`,
-        [user.id]
-     )
-
-     const verificationToken = crypto.randomBytes(32).toString("hex")
-
-     await pool.query(
-        `INSERT INTO email_verification_tokens (user_id,token,expires_at) VALUES ($1,$2,NOW() + INTERVAL '24 hours')`,
-        [user.id,verificationToken]
-     )
-     logger.warn({
-        userId: user.id,
-        email: user.email
-     },"Verification token resent")
-
-     return res.status(200).json({
-        success: true,
-        message: "Verification email sent",
-        verificationToken
-     })
     } catch (error) {
         logger.error({
             error: error.message
-        },"Resend verification failed")
+        }, "Resend verification failed")
 
         return res.status(500).json({
             success: false,
             message: "Internal server error"
         })
     }
- }
+}
 
 module.exports = {
     register,
