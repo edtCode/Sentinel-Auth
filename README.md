@@ -163,7 +163,7 @@ NODE_ENV=
 
 <div align="center">
 
-Built by **Brij** · Learning backend development one production pattern at a time
+Done for now.And more advanced auth features added in future...
 
 </div>
 >>>>>>> 553ec11 (New readme)
