@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 
-=======
 <div align="center">
 
 # SentinelAuth
@@ -163,7 +161,7 @@ NODE_ENV=
 
 <div align="center">
 
-Done for now.And more advanced auth features added in future...
+Done for now.And more advanced auth features added in future....
 
 </div>
->>>>>>> 553ec11 (New readme)
+
