@@ -1,3 +1,4 @@
+require("dotenv").config();
 beforeAll(() => {
     console.log("Starting test suite...")
 })

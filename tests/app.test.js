@@ -1,3 +1,4 @@
+require("dotenv").config();
 const request = require("supertest")
 
 const app = require('/src/app')
@@ -7,6 +8,6 @@ describe("Application", () => {
         const response = await request(app).get("/unknown-route");
 
         expect(response.statusCode).toBe(404)
-        
+
     })
 })
