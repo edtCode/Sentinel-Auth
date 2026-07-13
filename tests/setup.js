@@ -1,4 +1,9 @@
-require("dotenv").config();
+const dotenv = require("dotenv");
+
+dotenv.config({
+    path: ".env.test"
+});
+
 beforeAll(() => {
     console.log("Starting test suite...")
 })
