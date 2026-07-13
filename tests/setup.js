@@ -1,14 +1,17 @@
 const dotenv = require("dotenv");
 
+const pool = require('../src/config/db')
+
+const { clearDatabase } = require('./helpers/database')
+
 dotenv.config({
     path: ".env.test"
 });
 
-beforeAll(() => {
-    console.log("Starting test suite...")
+beforeEach( async ()=> {
+    await clearDatabase()
 })
 
-
-afterAll(() => {
-    console.log("Finished test suite...")
+afterAll( async ()=>{
+    await pool.end()
 })
