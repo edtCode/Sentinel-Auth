@@ -1,12 +1,12 @@
 const dotenv = require("dotenv");
 
-const pool = require('../src/config/db')
-
-const { clearDatabase } = require('./helpers/database')
-
 dotenv.config({
     path: ".env.test"
 });
+
+const pool = require('../src/config/db')
+
+const { clearDatabase } = require('./helpers/database')
 
 beforeEach( async ()=> {
     await clearDatabase()
