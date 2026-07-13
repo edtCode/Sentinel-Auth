@@ -12,7 +12,7 @@ const loginLimiter =
             message: "Too much login attempts . Try again later"
         },
 
-        standardHeader: true,
+        standardHeaders: true,
 
         legacyHeaders: false,
 
@@ -43,7 +43,7 @@ const registerLimiter =
             success: false,
             message: "Too many registration attempts . Try again later"
         },
-        standardHeader: true,
+        standardHeaders: true,
 
         legacyHeaders: false,
 
@@ -74,7 +74,7 @@ const refreshTokenLimiter =
             message: "Too many refresh request. Try again later"
         },
 
-        standardHeader: true,
+        standardHeaders: true,
 
         legacyHeaders: false,
 
