@@ -67,5 +67,20 @@ describe("Register API ", () => {
              expect(response.statusCode).toBe(400)
         })
 
+        it("should return 400 when password is missing", async() =>{
+
+            const user = {
+                name: "raju",
+                email: "raj@gmail.com",
+                password: " "
+            }
+
+            const response = await request(app)
+            .post("/api/auth/register")
+            .send(user)
+
+            expect(response.statusCode).toBe(400)
+        })
+
     })
 })
