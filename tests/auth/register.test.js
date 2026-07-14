@@ -1,6 +1,7 @@
 const request = require('supertest')
 
 const app = require('../../src/app')
+const { email } = require('zod')
 
 describe("Register API ", () => {
     describe("POST /api/auth/register", () => {
@@ -49,6 +50,21 @@ describe("Register API ", () => {
             .send(user)
 
             expect(response.statusCode).toBe(400)
+        })
+
+        it("should return 400 when name is missing", async() =>{
+            
+             const user = {
+                name: " ",
+                email: "brij@gmail.com",
+                password: "Password@123"
+             }
+
+             const response = await request(app)
+             .post("/api/auth/register")
+             .send(user)
+
+             expect(response.statusCode).toBe(400)
         })
 
     })
