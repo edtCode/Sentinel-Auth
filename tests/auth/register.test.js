@@ -37,5 +37,19 @@ describe("Register API ", () => {
             expect(response.statusCode).toBe(409)
         })
 
+        it("should return 400 when email is invalid", async() =>{
+            const user = {
+             name: "John Doe",
+             email: "john",
+             password: "Password@123"
+            }
+
+            const response = await request(app)
+            .post("/api/auth/register")
+            .send(user)
+
+            expect(response.statusCode).toBe(400)
+        })
+
     })
 })
