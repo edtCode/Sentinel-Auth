@@ -18,5 +18,24 @@ describe("Register API ", () => {
 
         })
 
+        it("should return 409 if email is already exist", async () =>{
+
+             const user = {
+             name: "John Doe",
+             email: "john@example.com",
+             password: "Password@123"
+    };
+
+            await request(app)
+            .post("/api/auth/register")
+            .send(user)
+
+            const response = await request(app)
+            .post("/api/auth/register")
+            .send(user)
+
+            expect(response.statusCode).toBe(409)
+        })
+
     })
 })
