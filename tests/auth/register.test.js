@@ -80,5 +80,22 @@ describe("Register API ", () => {
             expect(response.statusCode).toBe(400)
         })
 
+        it("sholuld return 400 when the password is weak ", async()=>{
+
+            const user = {
+                name: "Kendrik lamar",
+                email: "lamar420@gmail.com",
+                password: "12344563"
+            }
+
+            const response = await request(app)
+            .post("/api/auth/register")
+            .send(user)
+
+            expect(response.statusCode).toBe(400
+                
+            )
+        })
+
     })
 })
