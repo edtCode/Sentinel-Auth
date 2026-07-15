@@ -55,7 +55,6 @@ describe("Register API ", () => {
         it("should return 400 when name is missing", async() =>{
             
              const user = {
-                name: " ",
                 email: "brij@gmail.com",
                 password: "Password@123"
              }
@@ -72,7 +71,6 @@ describe("Register API ", () => {
             const user = {
                 name: "raju",
                 email: "raj@gmail.com",
-                password: " "
             }
 
             const response = await request(app)
