@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # SentinelAuth
@@ -9,9 +8,10 @@
 [![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+[![Jest](https://img.shields.io/badge/Tested_with-Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io)
 
-*JWT · Refresh Token Rotation · RBAC · Audit Logging · Rate Limiting · Swagger Docs*
+*JWT · Refresh Token Rotation · RBAC · Audit Logging · Rate Limiting · Swagger Docs · Integration Tested*
 
 </div>
 
@@ -21,7 +21,7 @@
 
 SentinelAuth is a **production-focused authentication service** built from scratch to demonstrate real-world backend security patterns — not just a tutorial app, but a system designed to handle auth the way production teams actually do it.
 
-It covers the full auth lifecycle: registration, login, email verification, password management, session handling across devices, role-based access, and a centralized audit trail.
+It covers the full auth lifecycle: registration, login, email verification, password management, session handling across devices, role-based access, and a centralized audit trail — backed by an integration test suite so every flow is verified, not just implemented.
 
 ---
 
@@ -94,6 +94,47 @@ Interactive docs available at `/api/docs` (Swagger UI).
 
 ---
 
+## Testing
+
+The auth lifecycle is covered by an integration test suite using **Jest** and **Supertest**, hitting the real Express app and a test PostgreSQL database rather than mocking the auth logic away.
+
+**Coverage includes:**
+- Registration — success, duplicate email, weak password rejection
+- Login — success, wrong credentials, unverified email block, account lockout after repeated failures
+- Token flow — access/refresh issuance, refresh rotation, reuse of a revoked token
+- Logout — single session and logout-all
+- Password reset — token issuance, valid reset, expired/invalid token rejection
+- Email verification — verify, resend, login-block-until-verified
+- RBAC — role-protected routes return 403 for insufficient roles, 200 for authorized roles
+- Audit logging — key events (`LOGIN`, `LOGIN_FAILED`, `PASSWORD_RESET`, `ACCOUNT_LOCKED`, etc.) are written on the corresponding action
+
+**Running the tests:**
+
+```bash
+# run once
+npm test
+
+# watch mode
+npm run test:watch
+
+# with coverage report
+npm run test:coverage
+```
+
+**Setup notes:**
+- Tests run against a dedicated test database (`DATABASE_URL_TEST`) so nothing touches dev/prod data.
+- Database state is reset between test files via migration + truncate, not shared fixtures, to keep tests independent.
+- Supertest drives requests directly against the Express `app` instance — no server needs to be running.
+
+```env
+# .env.test
+DATABASE_URL_TEST=
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+```
+
+---
+
 ## Database Schema
 
 ```
@@ -116,6 +157,7 @@ audit_logs               — full security event history
 | Validation | Zod |
 | Logging | Pino |
 | Security | Helmet, CORS, express-rate-limit |
+| Testing | Jest, Supertest |
 | Docs | Swagger / OpenAPI |
 
 ---
@@ -132,6 +174,8 @@ npm run dev
 
 Visit `http://localhost:5173/api/docs` to explore the API.
 
+To run the test suite, also copy `.env.test.example` to `.env.test` and point it at a disposable test database, then run `npm test`.
+
 ---
 
 ## Environment Variables
@@ -140,8 +184,8 @@ Visit `http://localhost:5173/api/docs` to explore the API.
 PORT=
 DATABASE_URL=
 JWT_ACCESS_SECRET=
-JWT_REFRESH_SECRET=
 JWT_ACCESS_EXPIRES_IN=
+JWT_REFRESH_SECRET=
 JWT_REFRESH_EXPIRES_IN=
 NODE_ENV=
 ```
@@ -156,12 +200,12 @@ NODE_ENV=
 - Audit logging as a first-class system concern
 - Express security hardening in practice
 - PostgreSQL schema design for auth systems
+- Writing integration tests that exercise real HTTP + DB behavior instead of mocking core logic away
 
 ---
 
 <div align="center">
 
-Done for now.And more advanced auth features added in future....
+Actively maintained — more advanced auth features in progress.
 
 </div>
-
