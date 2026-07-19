@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt")
 const pool = require("../../src/config/db")
-const { email } = require("zod")
 
 const createUser = async (overrides = {}) => {
 

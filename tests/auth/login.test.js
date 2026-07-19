@@ -66,5 +66,26 @@ describe("Login api", () => {
 
         })
 
+        it("should return 401 when email is not verified", async() =>{
+            
+            await createUser({
+                is_verified: false
+            })
+
+            const response = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: "alex12@gmail.com",
+                password: "Password@123"
+            })
+
+            expect(response.statusCode).toBe(401)
+
+            expect(response.body.success).toBe(false)
+
+            expect(response.body.message).toBe("Please verify you login first")
+
+        })
+
     })
 })
