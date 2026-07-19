@@ -87,5 +87,25 @@ describe("Login api", () => {
 
         })
 
+        it("should return 401 when account is locked", async() => {
+
+            await createUser({
+                account_locked_until: new Date(Date.now() + 15 * 60 * 1000)
+            })
+
+            const response = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: "alex12@gmail.com",
+                password: "Password@123"
+            })
+
+            expect(response.statusCode).toBe(423)
+
+            expect(response.body.success).toBe(false)
+
+            expect(response.body.message).toBe("Account is temporarily locked")
+        })
+
     })
 })
