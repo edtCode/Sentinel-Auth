@@ -206,6 +206,6 @@ NODE_ENV=
 
 <div align="center">
 
-Actively maintained — more advanced auth features in progress.
+Actively maintained — more advanced auth features in progress.....
 
 </div>
