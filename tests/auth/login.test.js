@@ -5,10 +5,9 @@ const { createUser } = require("../helpers/user")
 const app = require('../../src/app')
 
 const pool = require('../../src/config/db')
-const { email } = require('zod')
 
 describe("Login api", () => {
-    describe("/api/auth/login", () => {
+    describe("POST /api/auth/login", () => {
         it("should login user successfully", async() => {
 
             const user = await createUser()
@@ -52,6 +51,19 @@ describe("Login api", () => {
             )
 
             expect(result.rows[0].failed_attempts).toBe(1)
+        })
+
+        it("should return 401 email doesn't exist", async () => {
+
+            const response = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: "unknown@gmail.com",
+                password: "Password@123"
+            })
+
+            expect(response.statusCode).toBe(401)
+
         })
 
     })

@@ -9,6 +9,8 @@ module.exports = {
 
     clearMocks: true,
 
+    maxWorkers: 1,
+
     collectCoverageFrom: [
         "src/**/*.js",
         "!src/server.js"
