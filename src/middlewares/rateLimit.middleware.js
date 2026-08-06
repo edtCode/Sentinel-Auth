@@ -5,7 +5,7 @@ const loginLimiter =
     rateLimit({
         windowMs: 15 * 60 * 1000,
 
-        max: 5,
+        max: process.env.NODE_ENV === "test" ? 1000 : 5,
 
         message: {
             success: false,
@@ -37,7 +37,7 @@ const registerLimiter =
     rateLimit({
         windowMs: 60 * 60 * 1000,
 
-        max: 10,
+        max: process.env.NODE_ENV === "test" ? 1000 : 10,
 
         message: {
             success: false,
@@ -67,7 +67,7 @@ const refreshTokenLimiter =
     rateLimit({
         windowMs: 15 * 60 * 1000,
 
-        max: 20,
+        max: process.env.NODE_ENV === "test" ? 1000 : 20,
 
         message: {
             success: false,

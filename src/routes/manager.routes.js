@@ -1,6 +1,6 @@
-const exprees = require('express')
+const express = require('express')
 
-const router = exprees.Router()
+const router = express.Router()
 
 const { getManagerDashboard } = require('../controllers/manager.controller')
 

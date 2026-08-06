@@ -1,5 +1,4 @@
 const { z } = require('zod')
-const { refreshToken } = require('../controllers/auth.controllers')
 
 const registerSchema = z.object({
   name: z.string().min(3, "Name must be atleast 3 letters"),

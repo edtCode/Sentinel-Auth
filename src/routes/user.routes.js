@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const autheticate = require('../middlewares/auth.middleware')
+const authenticate = require('../middlewares/auth.middleware')
 const { getProfile } = require('../controllers/auth.controllers')
 
 /**
@@ -20,6 +20,6 @@ const { getProfile } = require('../controllers/auth.controllers')
  *       404:
  *         description: User not found
  */
-router.get("/me",autheticate,getProfile)
+router.get("/me",authenticate,getProfile)
 
 module.exports = router

@@ -387,7 +387,7 @@ const refreshToken = async (req, res) => {
         )
         return res.status(401).json({
             success: false,
-            message: "Invalid refersh token"
+            message: "Invalid refresh token"
         })
 
     }
@@ -398,7 +398,7 @@ const logout = async (req, res) => {
         const { refreshToken } = req.body
 
         const result = await pool.query(
-            `DELETE FROM refresh_tokens WHERE token = $1 RETURNING id`,
+            `DELETE FROM refresh_tokens WHERE token = $1 RETURNING id, user_id`,
             [refreshToken]
         )
 
@@ -419,14 +419,14 @@ const logout = async (req, res) => {
         )
 
         await createAuditLog({
-            userId: req.user.id,
+            userId: result.rows[0].user_id,
             eventType: "LOGOUT",
             ipAddress: req.ip,
             userAgent: req.headers["user-agent"]
         });
 
         return res.status(200).json({
-            message: true,
+            success: true,
             message: "User logout successfully"
 
         })
@@ -742,7 +742,7 @@ const verifyEmail = async (req, res) => {
 
         logger.info({
             userId: verificationToken.user_id,
-        }, "Email verified succesfully")
+        }, "Email verified successfully")
 
         await createAuditLog({
             userId: verificationToken.user_id,
@@ -753,7 +753,7 @@ const verifyEmail = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Email verified succesfully"
+            message: "Email verified successfully"
         })
 
     }

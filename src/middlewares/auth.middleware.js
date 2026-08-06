@@ -46,7 +46,7 @@ const authenticate = async (req, res, next) => {
             error: error.message
         }, "Authentication failed")
 
-        return res.status(500).json({
+        return res.status(401).json({
             success: false,
             message: "Invalid access token"
         })
