@@ -61,13 +61,12 @@ describe("Login api", () => {
                 email: "unknown@gmail.com",
                 password: "Password@123"
             })
-
             expect(response.statusCode).toBe(401)
 
         })
 
-        it("should return 401 when email is not verified", async() =>{
-            
+        it("should return 401 when email is not verified", async() => {
+
             await createUser({
                 is_verified: false
             })
@@ -78,11 +77,8 @@ describe("Login api", () => {
                 email: "alex12@gmail.com",
                 password: "Password@123"
             })
-
             expect(response.statusCode).toBe(401)
-
             expect(response.body.success).toBe(false)
-
             expect(response.body.message).toBe("Please verify you login first")
 
         })
@@ -101,11 +97,65 @@ describe("Login api", () => {
             })
 
             expect(response.statusCode).toBe(423)
-
             expect(response.body.success).toBe(false)
-
             expect(response.body.message).toBe("Account is temporarily locked")
         })
 
+        it("should lock the account after 5 failed attempts", async() => {
+
+            const user = await createUser()
+
+            for (let i = 0; i < 4; i++) {
+                const response = await request(app)
+                .post("/api/auth/login")
+                .send({
+                    email: "alex12@gmail.com",
+                    password: "wrongpassword"
+                })
+
+                expect(response.statusCode).toBe(401)
+            }
+
+            const fifthResponse = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: "alex12@gmail.com",
+                password: "wrongpassword"
+            })
+
+            expect(fifthResponse.statusCode).toBe(403)
+            expect(fifthResponse.body.message).toBe("Account locked for 15 minutes")
+
+            const result = await pool.query(
+                `SELECT failed_attempts, account_locked_until FROM users WHERE id = $1`,
+                [user.id]
+            )
+
+            expect(result.rows[0].failed_attempts).toBe(0)
+            expect(result.rows[0].account_locked_until).not.toBeNull()
+        })
+
+        it("should reset failed_attempts after a successful login", async() => {
+
+            await createUser({
+                failed_attempts: 2
+            })
+
+            const response = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: "alex12@gmail.com",
+                password: "Password@123"
+            })
+
+            expect(response.statusCode).toBe(200)
+
+            const result = await pool.query(
+                `SELECT failed_attempts FROM users WHERE email = $1`,
+                ["alex12@gmail.com"]
+            )
+
+            expect(result.rows[0].failed_attempts).toBe(0)
+        })
     })
 })

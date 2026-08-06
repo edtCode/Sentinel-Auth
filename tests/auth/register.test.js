@@ -1,7 +1,8 @@
 const request = require('supertest')
 
 const app = require('../../src/app')
-const { email } = require('zod')
+
+const pool = require('../../src/config/db')
 
 describe("Register API ", () => {
     describe("POST /api/auth/register", () => {
@@ -16,6 +17,23 @@ describe("Register API ", () => {
             })
 
             expect(response.statusCode).toBe(201)
+            expect(response.body.success).toBe(true)
+            expect(response.body.verificationToken).toBeDefined()
+            expect(response.body.user.email).toBe("rohan@gmail.com")
+
+            const tokenResult = await pool.query(
+                `SELECT * FROM email_verification_tokens WHERE user_id = $1`,
+                [response.body.user.id]
+            )
+
+            expect(tokenResult.rows.length).toBe(1)
+
+            const auditResult = await pool.query(
+                `SELECT * FROM audit_logs WHERE event_type = 'REGISTER' AND user_id = $1`,
+                [response.body.user.id]
+            )
+
+            expect(auditResult.rows.length).toBe(1)
 
         })
 
