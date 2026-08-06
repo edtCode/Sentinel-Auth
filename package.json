@@ -14,6 +14,9 @@
   },
   "scripts": {
     "dev": "nodemon src/server.js",
+    "dev:server": "nodemon src/server.js",
+    "dev:client": "npm --prefix frontend run dev",
+    "dev:all": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
     "start": "node src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -72,6 +75,7 @@
   "devDependencies": {
     "@jest/globals": "^30.4.1",
     "@types/jest": "^30.0.0",
+    "concurrently": "^10.0.4",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2"

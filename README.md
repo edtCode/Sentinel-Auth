@@ -1,6 +1,14 @@
 # SentinelAuth
 
+[![npm version](https://img.shields.io/npm/v/sentinelauth)](https://www.npmjs.com/package/sentinelauth)
+
 Production-focused authentication & authorization service built with Node.js, Express, and PostgreSQL. Covers the full auth lifecycle — registration, login, email verification, password management, multi-device sessions, OAuth, RBAC, and audit logging — backed by an integration test suite so every flow is verified, not just implemented.
+
+## Install
+
+```bash
+npm i sentinelauth
+```
 
 ## Tech Stack
 
@@ -75,7 +83,7 @@ Redirect-based — hit `/api/auth/google` or `/api/auth/github` directly in the 
 
 Interactive docs at `/api-docs` (Swagger UI).
 
-## cURL Examples
+## CURL Examples
 
 ```bash
 # Register
@@ -108,8 +116,11 @@ curl -X POST localhost:3000/api/auth/logout-all \
 git clone https://github.com/Brijnandan11/Sentinel-Auth.git
 cd Sentinel-Auth
 npm install
+```
 
-# environment
+### Environment
+
+```bash
 cp .env.example .env
 # fill in DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME,
 # JWT_SECRET, JWT_REFRESH_SECRET
