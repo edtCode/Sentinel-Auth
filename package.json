@@ -1,18 +1,55 @@
 {
-  "name": "saas-auth-service",
+  "name": "sentinelauth",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/server.js",
+  "description": "Production-grade authentication & authorization service for Express: JWT access + refresh token rotation, OAuth (Google & GitHub), RBAC, email verification, lockout, audit logging, rate limiting and Swagger docs.",
+  "main": "src/app.js",
+  "type": "commonjs",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm test"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "authentication",
+    "authorization",
+    "auth",
+    "jwt",
+    "express",
+    "oauth",
+    "google",
+    "github",
+    "rbac",
+    "role-based-access-control",
+    "refresh-token",
+    "audit-log",
+    "rate-limiting",
+    "email-verification",
+    "swagger"
+  ],
+  "author": {
+    "name": "Brijnandan11",
+    "url": "https://github.com/Brijnandan11"
+  },
   "license": "ISC",
-  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brijnandan11/Sentinel-Auth.git"
+  },
+  "homepage": "https://github.com/Brijnandan11/Sentinel-Auth#readme",
+  "bugs": {
+    "url": "https://github.com/Brijnandan11/Sentinel-Auth/issues"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
