@@ -185,7 +185,6 @@ describe("OAuth callback API", () => {
 
     describe("OAuth account linking", () => {
         it("should link an existing password account to the OAuth provider", async () => {
-            // password account with the same email
             const registerResponse = await request(app)
                 .post("/api/auth/register")
                 .send({

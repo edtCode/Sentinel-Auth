@@ -49,7 +49,6 @@ describe("Logout API", () => {
         it("should revoke all sessions for the user", async () => {
             const { accessToken } = await loginUser();
 
-            // create a second session
             await loginUser();
 
             const sessionsBefore = await pool.query(

@@ -25,7 +25,6 @@ const findOrCreateOAuthUser = async (provider, profile) => {
         throw error;
     }
 
-    // 1. Existing OAuth account -> return it
     const byProvider = await pool.query(
         `SELECT * FROM users WHERE provider = $1 AND provider_id = $2`,
         [provider, providerId]
@@ -46,7 +45,6 @@ const findOrCreateOAuthUser = async (provider, profile) => {
         return existing;
     }
 
-    // 2. Same email already exists (password account) -> link the provider
     const byEmail = await pool.query(
         `SELECT * FROM users WHERE email = $1`,
         [email]
@@ -61,7 +59,6 @@ const findOrCreateOAuthUser = async (provider, profile) => {
         return linked.rows[0];
     }
 
-    // 3. Brand new OAuth user -> create (random password, email pre-verified)
     const randomPassword = crypto.randomBytes(32).toString("hex");
 
     const created = await pool.query(
