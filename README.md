@@ -141,7 +141,7 @@ npm run test:coverage
 ```env
 # .env.test
 NODE_ENV=test
-PORT=5173
+PORT=3000
 
 DB_HOST=localhost
 DB_PORT=5432
@@ -224,7 +224,19 @@ cp .env.example .env   # fill in your values
 npm run dev
 ```
 
-Visit `http://localhost:5173/api-docs` to explore the API.
+Visit `http://localhost:3000/api-docs` to explore the API.
+
+### Frontend (optional)
+
+The React app lives in `frontend/` (Vite + TanStack Start). In dev the Vite server runs on `:5173` and proxies every `/api/*` request to the backend on `:3000`, so the browser only ever talks to one origin.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` — the page shows a live "api" status pill in the hero that hits `GET /api/health` through the proxy. Google/GitHub OAuth callback URLs stay on `:5173` and are forwarded to the backend by the same proxy.
 
 To run the test suite, also copy `.env.test.example` to `.env.test` and point it at a disposable test database, then run `npm test`.
 

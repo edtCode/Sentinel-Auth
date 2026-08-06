@@ -6,7 +6,7 @@ const pool = require("./config/db");
 
 const logger = require("./utils/logger");
 
-const PORT = process.env.PORT || 5173;
+const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
