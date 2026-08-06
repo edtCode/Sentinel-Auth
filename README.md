@@ -29,8 +29,9 @@ It covers the full auth lifecycle: registration, login, email verification, pass
 
 ### Authentication
 - Register, Login, Logout (single device & all devices)
-- JWT Access Tokens + Refresh Token Rotation
+- JWT Access Tokens + Refresh Token Rotation (unique `jti` on every rotation)
 - Multi-device session management
+- Google & GitHub OAuth login (linkable to existing password accounts)
 
 ### Authorization
 - Role-Based Access Control — `user`, `manager`, `admin`
@@ -86,11 +87,15 @@ Each log captures: `userId · eventType · ipAddress · userAgent · metadata ·
 | `POST` | `/api/auth/change-password` | Change (authenticated) |
 | `POST` | `/api/auth/verify-email` | Verify email token |
 | `POST` | `/api/auth/resend-verification` | Resend verification |
+| `GET` | `/api/auth/google` | Start Google OAuth login |
+| `GET` | `/api/auth/google/callback` | Google OAuth callback |
+| `GET` | `/api/auth/github` | Start GitHub OAuth login |
+| `GET` | `/api/auth/github/callback` | GitHub OAuth callback |
 | `GET` | `/api/users/me` | Get own profile |
 | `GET` | `/api/admin/dashboard` | Admin-only route |
 | `GET` | `/api/manager/dashboard` | Manager-only route |
 
-Interactive docs available at `/api/docs` (Swagger UI).
+Interactive docs available at `/api-docs` (Swagger UI).
 
 ---
 
@@ -134,6 +139,25 @@ JWT_REFRESH_SECRET=
 ```
 
 ---
+
+## OAuth (Google & GitHub)
+
+OAuth strategies are only registered when the matching environment variables are present.
+If a provider's credentials are missing, its endpoints return `503 OAuth is not configured`.
+
+```env
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_CALLBACK_URL=http://localhost:5173/api/auth/google/callback
+
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
+```
+
+On a successful OAuth login the service either creates a new user (with a random
+password, so password login is not possible for OAuth-only accounts) or links the
+provider to an existing account that already uses the same email.
 
 ## Database Schema
 
