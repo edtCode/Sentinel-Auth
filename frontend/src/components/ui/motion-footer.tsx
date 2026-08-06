@@ -291,7 +291,9 @@ export function CinematicFooter() {
                 </MagneticButton>
                 <MagneticButton
                   as="a"
-                  href="#npm"
+                  href="https://www.npmjs.com/package/sentinelauth"
+                  target="_blank"
+                  rel="noreferrer"
                   className="footer-glass-pill group flex items-center gap-3 rounded-full px-8 py-4 text-sm font-bold text-foreground md:px-10 md:py-5 md:text-base"
                 >
                   <Package className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-foreground" />

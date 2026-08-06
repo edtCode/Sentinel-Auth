@@ -1172,7 +1172,12 @@ function LandingPage() {
                   hint: "→ github.com/Brijnandan11",
                   external: true,
                 },
-                { href: "#npm", label: "npm", hint: "→ npm run" },
+                {
+                  href: "https://www.npmjs.com/package/sentinelauth",
+                  label: "npm",
+                  hint: "→ npmjs.com/package/sentinelauth",
+                  external: true,
+                },
                 { href: "#changelog", label: "Changelog", hint: "/changelog" },
               ].map((it: { href: string; label: string; hint: string; external?: boolean }, i) => (
                 <a
@@ -1263,7 +1268,9 @@ function LandingPage() {
                 >
                   <CopyInstall size="lg" />
                   <a
-                    href="#npm"
+                    href="https://www.npmjs.com/package/sentinelauth"
+                    target="_blank"
+                    rel="noreferrer"
                     className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
                   >
                     View on npm →
@@ -1763,7 +1770,9 @@ function LandingPage() {
               <div className="mt-10 flex flex-col items-center justify-center gap-4">
                 <CopyInstall size="lg" />
                 <a
-                  href="#npm"
+                  href="https://www.npmjs.com/package/sentinelauth"
+                  target="_blank"
+                  rel="noreferrer"
                   className="group inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
                 >
                   <span>View on npm</span>
