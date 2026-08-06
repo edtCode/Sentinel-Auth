@@ -11,7 +11,7 @@
 [![Jest](https://img.shields.io/badge/Tested_with-Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io)
 
-*JWT · Refresh Token Rotation · RBAC · Audit Logging · Rate Limiting · Swagger Docs · Integration Tested*
+*JWT · Refresh Token Rotation · OAuth (Google & GitHub) · RBAC · Audit Logging · Rate Limiting · Swagger Docs · Integration Tested*
 
 </div>
 
@@ -21,7 +21,7 @@
 
 SentinelAuth is a **production-focused authentication service** built from scratch to demonstrate real-world backend security patterns — not just a tutorial app, but a system designed to handle auth the way production teams actually do it.
 
-It covers the full auth lifecycle: registration, login, email verification, password management, session handling across devices, role-based access, and a centralized audit trail — backed by an integration test suite so every flow is verified, not just implemented.
+It covers the full auth lifecycle: registration, login, email verification, password management, session handling across devices, Google & GitHub OAuth, role-based access, and a centralized audit trail — backed by an integration test suite so every flow is verified, not just implemented.
 
 ---
 
@@ -63,11 +63,13 @@ Centralized event tracking across the entire auth lifecycle:
 |---|---|
 | `REGISTER` | New user signup |
 | `LOGIN` / `LOGIN_FAILED` | Auth attempts |
-| `LOGOUT` | Session end |
-| `PASSWORD_CHANGED` / `PASSWORD_RESET` | Credential updates |
-| `EMAIL_VERIFIED` | Verification complete |
+| `LOGOUT` / `LOGOUT_ALL_DEVICES` | Session end |
+| `PASSWORD_CHANGED` | Password changed by user |
+| `PASSWORD_RESET_REQUESTED` / `PASSWORD_RESET_COMPLETED` | Password reset flow |
+| `EMAIL_VERIFIED` / `VERIFICATION_RESENT` | Email verification flow |
 | `ACCOUNT_LOCKED` | Too many failed attempts |
-| `REFRESH_ROTATED` | Token rotation |
+| `REFRESH_TOKEN_ROTATED` | Token rotation |
+| `OAUTH_LOGIN` | Google / GitHub login |
 
 Each log captures: `userId · eventType · ipAddress · userAgent · metadata · timestamp`
 
@@ -108,10 +110,14 @@ The auth lifecycle is covered by an integration test suite using **Jest** and **
 - Login — success, wrong credentials, unverified email block, account lockout after repeated failures
 - Token flow — access/refresh issuance, refresh rotation, reuse of a revoked token
 - Logout — single session and logout-all
-- Password reset — token issuance, valid reset, expired/invalid token rejection
+- Password — forgot, reset, change password (valid + invalid/expired token cases)
 - Email verification — verify, resend, login-block-until-verified
+- OAuth — Google/GitHub redirect start, callback user creation/reuse/linking, unconfigured provider (503)
 - RBAC — role-protected routes return 403 for insufficient roles, 200 for authorized roles
-- Audit logging — key events (`LOGIN`, `LOGIN_FAILED`, `PASSWORD_RESET`, `ACCOUNT_LOCKED`, etc.) are written on the corresponding action
+- Profile — authenticated user endpoint returns the current user
+- Audit logging — key events are written on the corresponding action
+
+Currently **69 tests across 16 suites**, with ~89% statement coverage.
 
 **Running the tests:**
 
@@ -127,15 +133,32 @@ npm run test:coverage
 ```
 
 **Setup notes:**
-- Tests run against a dedicated test database (`DATABASE_URL_TEST`) so nothing touches dev/prod data.
-- Database state is reset between test files via migration + truncate, not shared fixtures, to keep tests independent.
+- Tests run against a dedicated test database (`saas_auth_test` in `.env.test`) so nothing touches dev/prod data.
+- Database state is cleared before every test, keeping tests independent.
 - Supertest drives requests directly against the Express `app` instance — no server needs to be running.
+- OAuth tests use placeholder credentials: the redirect tests only assert the provider URL, and the callback tests mock the provider strategies entirely.
 
 ```env
 # .env.test
-DATABASE_URL_TEST=
-JWT_ACCESS_SECRET=
-JWT_REFRESH_SECRET=
+NODE_ENV=test
+PORT=5173
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_test_db_password
+DB_NAME=saas_auth_test
+
+JWT_SECRET=some-long-random-access-secret
+JWT_REFRESH_SECRET=some-long-random-refresh-secret
+
+GOOGLE_CLIENT_ID=test-google-client-id
+GOOGLE_CLIENT_SECRET=test-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5173/api/auth/google/callback
+
+GITHUB_CLIENT_ID=test-github-client-id
+GITHUB_CLIENT_SECRET=test-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
 ```
 
 ---
@@ -159,13 +182,18 @@ On a successful OAuth login the service either creates a new user (with a random
 password, so password login is not possible for OAuth-only accounts) or links the
 provider to an existing account that already uses the same email.
 
+---
+
 ## Database Schema
 
 ```
-users                    — accounts, roles, lockout state
+users                    — accounts, roles, lockout state, OAuth provider + provider_id
 refresh_tokens           — active sessions per device
 password_reset_tokens    — one-time reset links
 email_verification_tokens — pending verifications
+login_logs               — successful logins
+failed_login_logs        — rejected login attempts
+password_change_logs     — password update history
 audit_logs               — full security event history
 ```
 
@@ -177,7 +205,7 @@ audit_logs               — full security event history
 |---|---|
 | Runtime | Node.js + Express.js |
 | Database | PostgreSQL |
-| Auth | JWT + bcrypt |
+| Auth | JWT + bcrypt + Passport.js (Google & GitHub OAuth) |
 | Validation | Zod |
 | Logging | Pino |
 | Security | Helmet, CORS, express-rate-limit |
@@ -189,14 +217,14 @@ audit_logs               — full security event history
 ## Getting Started
 
 ```bash
-git clone https://github.com/your-username/sentinel-auth.git
-cd sentinel-auth
+git clone https://github.com/Brijnandan11/Sentinel-Auth.git
+cd Sentinel-Auth
 npm install
 cp .env.example .env   # fill in your values
 npm run dev
 ```
 
-Visit `http://localhost:5173/api/docs` to explore the API.
+Visit `http://localhost:5173/api-docs` to explore the API.
 
 To run the test suite, also copy `.env.test.example` to `.env.test` and point it at a disposable test database, then run `npm test`.
 
@@ -206,12 +234,21 @@ To run the test suite, also copy `.env.test.example` to `.env.test` and point it
 
 ```env
 PORT=
-DATABASE_URL=
-JWT_ACCESS_SECRET=
-JWT_ACCESS_EXPIRES_IN=
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+JWT_SECRET=
 JWT_REFRESH_SECRET=
-JWT_REFRESH_EXPIRES_IN=
-NODE_ENV=
+
+# Optional - only set if you want OAuth login
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GITHUB_CALLBACK_URL=
 ```
 
 ---
