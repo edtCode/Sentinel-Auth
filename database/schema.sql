@@ -297,7 +297,8 @@ CREATE TABLE public.users (
     failed_attempts integer DEFAULT 0,
     account_locked_until timestamp with time zone,
     updated_at timestamp with time zone DEFAULT now(),
-    provider_id text
+    provider_id text,
+    provider text
 );
 
 

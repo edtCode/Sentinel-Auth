@@ -12,11 +12,17 @@ const envSchema = z.object({
     JWT_SECRET: z.string().min(1),
     JWT_REFRESH_SECRET: z.string().min(1),
 
-    // GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_ID: z.string().optional(),
 
-    // GOOGLE_CLIENT_SECRET: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
 
-    // GOOGLE_CALLBACK_URL: z.string().min(1),
+    GOOGLE_CALLBACK_URL: z.string().optional(),
+
+    GITHUB_CLIENT_ID: z.string().optional(),
+
+    GITHUB_CLIENT_SECRET: z.string().optional(),
+
+    GITHUB_CALLBACK_URL: z.string().optional(),
 });
 
 const result =

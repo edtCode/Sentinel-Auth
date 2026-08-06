@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const managerRoutes = require('./routes/manager.routes');
+const oauthRoutes = require('./routes/oauth.routes');
 
 const corsOptions = require("./config/cors");
 
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use("/api-docs",swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", oauthRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/manager", managerRoutes);
