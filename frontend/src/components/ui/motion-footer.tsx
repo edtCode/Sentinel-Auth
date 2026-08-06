@@ -33,11 +33,6 @@ const STYLES = `
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
-  @keyframes footer-heartbeat {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px color-mix(in oklch, var(--destructive) 50%, transparent)); }
-    15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px color-mix(in oklch, var(--destructive) 80%, transparent)); }
-    30% { transform: scale(1); }
-  }
   .animate-footer-breathe { animation: footer-breathe 8s ease-in-out infinite alternate; }
   .animate-footer-scroll-marquee { animation: footer-scroll-marquee 40s linear infinite; }
   .animate-footer-heartbeat { animation: footer-heartbeat 2s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
@@ -95,7 +90,6 @@ const STYLES = `
   @media (prefers-reduced-motion: reduce) {
     .animate-footer-breathe,
     .animate-footer-scroll-marquee,
-    .animate-footer-heartbeat,
     .footer-aurora,
     .footer-giant-bg-text,
     .footer-text-glow {
@@ -336,29 +330,10 @@ export function CinematicFooter() {
             <div className="order-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:order-1 md:text-xs">
               © {new Date().getFullYear()} SENTINELAUTH · All rights reserved
             </div>
-            <div className="footer-glass-pill order-1 flex cursor-default items-center gap-2 rounded-full border-border/50 px-6 py-3 md:order-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground md:text-xs">
-                Crafted with
-              </span>
-              <span className="animate-footer-heartbeat text-destructive text-sm md:text-base">
-                ❤
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground md:text-xs">
-                by
-              </span>
-              <a
-                href="https://github.com/Brijnandan11"
-                target="_blank"
-                rel="noreferrer"
-                className="ml-1 text-xs font-black normal-case text-foreground hover:text-primary md:text-sm"
-              >
-                Brijnandan11
-              </a>
-            </div>
             <MagneticButton
               as="button"
               onClick={scrollToTop}
-              className="footer-glass-pill group order-3 flex h-12 w-12 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+              className="footer-glass-pill group order-2 flex h-12 w-12 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
             >
               <ArrowUp className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1.5" />
             </MagneticButton>
