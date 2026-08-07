@@ -53,3 +53,5 @@ Thumbs.db
 .pnp.js
 .vercel
 .env*
+!.env.example
+!.env.test.example

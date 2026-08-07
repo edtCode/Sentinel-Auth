@@ -1,83 +1,18 @@
 {
-  "name": "sentinelauth",
+  "name": "sentinel-auth-monorepo",
   "version": "1.1.0",
-  "description": "Production-grade authentication & authorization service for Express: JWT access + refresh token rotation, OAuth (Google & GitHub), RBAC, email verification, lockout, audit logging, rate limiting and Swagger docs.",
-  "main": "src/app.js",
-  "type": "commonjs",
-  "files": [
-    "src/",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=18.0.0"
-  },
+  "private": true,
+  "description": "SentinelAuth monorepo — backend (Express + PostgreSQL) deploys to Render, frontend (TanStack Start) deploys to Vercel.",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "dev:server": "nodemon src/server.js",
+    "dev:server": "npm --prefix backend run dev",
     "dev:client": "npm --prefix frontend run dev",
-    "dev:all": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
-    "start": "node src/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "prepublishOnly": "npm test"
-  },
-  "keywords": [
-    "authentication",
-    "authorization",
-    "auth",
-    "jwt",
-    "express",
-    "oauth",
-    "google",
-    "github",
-    "rbac",
-    "role-based-access-control",
-    "refresh-token",
-    "audit-log",
-    "rate-limiting",
-    "email-verification",
-    "swagger"
-  ],
-  "author": {
-    "name": "Brijnandan11",
-    "url": "https://github.com/Brijnandan11"
-  },
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Brijnandan11/Sentinel-Auth.git"
-  },
-  "homepage": "https://github.com/Brijnandan11/Sentinel-Auth#readme",
-  "bugs": {
-    "url": "https://github.com/Brijnandan11/Sentinel-Auth/issues"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2",
-    "helmet": "^8.2.0",
-    "jsonwebtoken": "^9.0.3",
-    "passport": "^0.7.0",
-    "passport-github2": "^0.1.12",
-    "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.21.0",
-    "pino": "^10.3.1",
-    "pino-http": "^11.0.0",
-    "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-express": "^5.0.1",
-    "zod": "^4.4.3"
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test",
+    "start:backend": "npm --prefix backend start"
   },
   "devDependencies": {
-    "@jest/globals": "^30.4.1",
-    "@types/jest": "^30.0.0",
-    "concurrently": "^10.0.4",
-    "jest": "^30.4.2",
-    "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
-  }
+    "concurrently": "^10.0.4"
+  },
+  "license": "ISC"
 }
