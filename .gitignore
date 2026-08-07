@@ -51,3 +51,5 @@ Thumbs.db
 .cache/
 .pnp
 .pnp.js
+.vercel
+.env*
