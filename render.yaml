@@ -1,0 +1,25 @@
+# Render Blueprint — deploy the backend service from the backend/ folder.
+# Connects this repo to Render. Backend: Node + Express on Render;
+# frontend deploys separately to Vercel (root directory: frontend).
+services:
+  - type: web
+    name: sentinel-auth-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    # Optional: a managed Postgres database (uncomment and Render provisions it)
+    # databases:
+    #   - name: sentinelauth-db
+    #     databaseName: sentinelauth
+    #     user: sentinelauth
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set these in the Render dashboard (secrets, do not commit):
+      # - DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+      #   (or a DATABASE_URL-backed connection if you adapt src/config/db.js)
+      # - JWT_SECRET, JWT_REFRESH_SECRET
+      # - GOOGLE_CLIENT_ID/SECRET/CALLBACK_URL, GITHUB_CLIENT_ID/SECRET/CALLBACK_URL
+      # - CORS_ORIGINS — your deployed Vercel frontend URL(s)

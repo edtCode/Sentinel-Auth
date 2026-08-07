@@ -1,7 +1,10 @@
 // Typed client for the SentinelAuth backend.
-// Dev: requests go through the Vite proxy (/api -> http://localhost:3000).
-// Auth: access/refresh tokens are returned in the response body and sent via
-// the Authorization header (Bearer). Tokens persist in localStorage.
+// The API base URL is resolved per environment:
+//   - Reads VITE_API_URL (e.g. your Render backend URL) when provided.
+//   - Otherwise falls back to a relative "/api" path, which the Vite dev
+//     server proxies to the local backend (see vite.config.ts).
+// Tokens are returned in the response body and sent via the Authorization
+// header (Bearer). Tokens persist in localStorage.
 
 export type Role = "user" | "manager" | "admin";
 
@@ -45,6 +48,11 @@ const REFRESH_TOKEN_KEY = "sentinel_refresh_token";
 
 const isBrowser = typeof window !== "undefined";
 
+// Configurable API base URL. Set VITE_API_URL in the frontend's build env to
+// point at the deployed backend (e.g. https://sentinel-auth-api.onrender.com).
+export const API_BASE_URL: string =
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
 export const getAccessToken = (): string | null =>
   isBrowser ? localStorage.getItem(ACCESS_TOKEN_KEY) : null;
 
@@ -87,7 +95,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
   });
