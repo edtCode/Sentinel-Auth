@@ -1,6 +1,6 @@
 {
   "name": "sentinelauth",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Production-grade authentication & authorization service for Express: JWT access + refresh token rotation, OAuth (Google & GitHub), RBAC, email verification, lockout, audit logging, rate limiting and Swagger docs.",
   "main": "src/app.js",
   "type": "commonjs",
