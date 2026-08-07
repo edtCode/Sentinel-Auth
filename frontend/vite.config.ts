@@ -7,6 +7,11 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // Deploy target is Vercel (not Cloudflare, which is this config's default).
+  // `nitro: { preset }` overrides the hard-coded cloudflare-module preset so
+  // `vite build` emits a Vercel-compatible serverless function (.vercel/output)
+  // instead of a Cloudflare worker that crashes Vercel with FUNCTION_INVOCATION_FAILED.
+  nitro: { preset: "vercel" },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
