@@ -5,7 +5,6 @@ import { GestureScrollControl } from "@/components/GestureScrollControl";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { PointerFieldText } from "@/components/PointerFieldText";
-import { ApiStatus } from "@/components/ApiStatus";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 
 export const Route = createFileRoute("/")({
@@ -276,14 +275,6 @@ function AuditFeed({ compact = false }: { compact?: boolean }) {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-      {children}
     </div>
   );
 }
@@ -944,41 +935,6 @@ function AnimatedStat({ value }: { value: string }) {
   );
 }
 
-function TypedEyebrow({ children }: { children: string }) {
-  const { ref, shown } = useReveal<HTMLDivElement>();
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    if (!shown) return;
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setN(children.length);
-      return;
-    }
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setN(i);
-      if (i >= children.length) clearInterval(id);
-    }, 24);
-    return () => clearInterval(id);
-  }, [shown, children]);
-  return (
-    <div
-      ref={ref}
-      className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
-    >
-      {children.slice(0, n)}
-      <span
-        className="inline-block h-[10px] w-[6px] translate-y-[1px] ml-[2px] animate-cursor"
-        style={{ background: "var(--critical)", opacity: n < children.length ? 1 : 0 }}
-        aria-hidden
-      />
-    </div>
-  );
-}
-
 function LandingPage() {
   const { theme, setTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -996,22 +952,16 @@ function LandingPage() {
 
   const features = [
     {
-      no: "§ 01",
-      label: "AUTHENTICATE",
       subhead: "Tokens that rotate themselves.",
       body: "Drop sentinelAuth() into your Express app. Short-lived JWT access tokens and rotating refresh tokens are issued, verified, and revoked in middleware — no auth routes to write.",
       widget: <TokenRotateWidget />,
     },
     {
-      no: "§ 02",
-      label: "AUTHORIZE",
       subhead: "Roles, not regex.",
       body: "Guard routes with a single requireRole('admin') middleware. User, Manager, Admin come out of the box; the check runs in-process, no network hop, no if-tree spaghetti in your controllers.",
       widget: <RbacWidget />,
     },
     {
-      no: "§ 03",
-      label: "AUDIT",
       subhead: "A record for every request.",
       body: "Registration, login, failed login, password change, role grant, lockout — every sensitive action is emitted through a structured, append-only logger you own and pipe wherever you want.",
       widget: (
@@ -1021,8 +971,6 @@ function LandingPage() {
       ),
     },
     {
-      no: "§ 04",
-      label: "LOCK",
       subhead: "Brute force hits a wall.",
       body: "Five failed attempts inside the window and the account locks — counted, enforced, and logged by the package. No Redis rules to write, no alerts to wire, no state to babysit.",
       widget: <LockWidget />,
@@ -1277,21 +1225,9 @@ function LandingPage() {
               {}
               <div className="md:col-span-6">
                 <div
-                  className="hero-kin flex flex-wrap items-center gap-3"
+                  className="hero-kin"
                   style={{ animationDelay: "80ms" }}
                 >
-                  <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/40 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur">
-                    <span
-                      className="relative inline-block h-1.5 w-1.5 rounded-full hero-pulse-dot"
-                      style={{
-                        background: "var(--critical)",
-                        boxShadow:
-                          "0 0 10px 1px color-mix(in oklab, var(--critical) 65%, transparent)",
-                      }}
-                    />
-                    v1.4.2 · middleware, not a service
-                  </div>
-                  <ApiStatus />
                 </div>
 
                 <h1
@@ -1349,7 +1285,7 @@ function LandingPage() {
         <SectionShell>
           <div className="mx-auto max-w-6xl px-6 pt-24 pb-16 md:pt-32">
             {features.map((f, i) => (
-              <div key={f.no} className="relative h-[85vh] md:h-[90vh]">
+              <div key={f.subhead} className="relative h-[85vh] md:h-[90vh]">
                 <div className="sticky" style={{ top: `calc(6rem + ${i * 18}px)` }}>
                   <div
                     className="rounded-2xl border border-border bg-[var(--surface)]/95 backdrop-blur-md card-glow p-8 md:p-12 hover-critical"
@@ -1364,7 +1300,6 @@ function LandingPage() {
                       }`}
                     >
                       <div className="md:col-span-6">
-                        <TypedEyebrow>{`${f.no} — ${f.label}`}</TypedEyebrow>
                         <h2
                           className="mt-4 max-w-[16ch] text-[32px] font-medium leading-[1.1] tracking-tight md:text-[44px]"
                           style={{ fontFamily: "var(--font-display)" }}
@@ -1432,7 +1367,6 @@ function LandingPage() {
 
           <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
             <Reveal>
-              <TypedEyebrow>§ 05 — UNDER THE HOOD</TypedEyebrow>
               <h2
                 className="mt-4 max-w-[22ch] text-[32px] font-medium leading-[1.05] tracking-tight md:text-[52px]"
                 style={{ fontFamily: "var(--font-display)" }}
@@ -1589,7 +1523,6 @@ function LandingPage() {
               <div className="md:col-span-5">
                 <div className="md:sticky md:top-24">
                   <Reveal>
-                    <TypedEyebrow>§ 06 — WHO IT'S FOR</TypedEyebrow>
                     <h2
                       className="mt-4 text-[32px] font-medium leading-[1.02] tracking-tight md:text-[52px]"
                       style={{ fontFamily: "var(--font-display)" }}
@@ -1738,7 +1671,6 @@ function LandingPage() {
               <div className="md:col-span-5">
                 <div className="md:sticky md:top-24">
                   <Reveal>
-                    <TypedEyebrow>§ 07 — API REFERENCE</TypedEyebrow>
                     <h2
                       className="mt-4 text-[32px] font-medium leading-[1.02] tracking-tight md:text-[52px]"
                       style={{ fontFamily: "var(--font-display)" }}
@@ -1841,7 +1773,6 @@ function LandingPage() {
             </div>
 
             <Reveal>
-              <TypedEyebrow>§ 08 — CHANGELOG</TypedEyebrow>
               <h2
                 className="mt-4 max-w-[20ch] text-[32px] font-medium leading-[1.02] tracking-tight md:text-[52px]"
                 style={{ fontFamily: "var(--font-display)" }}
@@ -1981,7 +1912,6 @@ function LandingPage() {
             />
 
             <Reveal>
-              <Eyebrow>§ 09 — BEGIN</Eyebrow>
               <h2
                 className="mx-auto mt-6 max-w-[18ch] text-[40px] font-medium leading-[1.05] tracking-tight md:text-[64px]"
                 style={{ fontFamily: "var(--font-display)" }}
