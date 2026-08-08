@@ -6,6 +6,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { PointerFieldText } from "@/components/PointerFieldText";
 import { CinematicFooter } from "@/components/ui/motion-footer";
+import { RandomLetterSwapNav } from "@/components/ui/random-letter-swap-nav";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -1111,6 +1112,7 @@ function LandingPage() {
                 <span className="text-foreground">2.4k</span>
               </a>
             </div>
+            <RandomLetterSwapNav />
             <div className="flex items-center gap-3">
               <button
                 type="button"
