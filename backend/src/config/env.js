@@ -3,11 +3,12 @@ const { z } = require("zod");
 const envSchema = z.object({
     PORT: z.string().min(1),
 
-    DB_HOST: z.string().min(1),
-    DB_PORT: z.string().min(1),
-    DB_USER: z.string().min(1),
-    DB_PASSWORD: z.string().min(1),
-    DB_NAME: z.string().min(1),
+    DATABASE_URL: z.string().optional(),
+    DB_HOST: z.string().optional(),
+    DB_PORT: z.string().optional(),
+    DB_USER: z.string().optional(),
+    DB_PASSWORD: z.string().optional(),
+    DB_NAME: z.string().optional(),
 
     JWT_SECRET: z.string().min(1),
     JWT_REFRESH_SECRET: z.string().min(1),
