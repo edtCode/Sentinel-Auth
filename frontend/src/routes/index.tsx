@@ -1099,18 +1099,6 @@ function LandingPage() {
                 <img src="/favicon.svg" alt="" aria-hidden className="h-5 w-5 rounded-[5px]" />
                 SENTINEL<span style={{ color: "var(--critical)" }}>·</span>AUTH
               </a>
-              <span className="hidden items-center gap-1.5 rounded border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:inline-flex">
-                npm <span className="text-foreground">v1.4.2</span>
-              </span>
-              <a
-                href="https://github.com/Brijnandan11"
-                target="_blank"
-                rel="noreferrer"
-                className="hidden items-center gap-1.5 rounded border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground sm:inline-flex"
-              >
-                <span style={{ color: "var(--critical)" }}>★</span>
-                <span className="text-foreground">2.4k</span>
-              </a>
             </div>
             <RandomLetterSwapNav />
             <div className="flex items-center gap-3">
@@ -1118,8 +1106,8 @@ function LandingPage() {
                 type="button"
                 role="switch"
                 aria-checked={theme === "dark"}
-                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme (currently ${theme})`}
-                title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode (currently ${theme})`}
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -1127,17 +1115,25 @@ function LandingPage() {
                     setTheme(theme === "dark" ? "light" : "dark");
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground hover:border-foreground/30 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--critical)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group inline-flex items-center rounded-full border border-border bg-background/60 p-0.5 transition-colors hover:border-foreground/30 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--critical)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <span aria-hidden="true">{theme === "dark" ? "☾" : "☀"}</span>
-                <span>{theme}</span>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[13px] transition-colors ${
+                    theme === "dark" ? "bg-foreground/10 text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  ☾
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[13px] transition-colors ${
+                    theme === "light" ? "bg-foreground/10 text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  ☀
+                </span>
               </button>
-              <span
-                className="hidden rounded-md border border-border px-3 py-1.5 font-mono text-[11px] tracking-[0.02em] sm:inline-block"
-                style={{ color: "var(--critical)" }}
-              >
-                npm i sentinelauth
-              </span>
               <button
                 type="button"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -1149,7 +1145,6 @@ function LandingPage() {
                 <span className="hamb-icon" aria-hidden="true">
                   <i />
                 </span>
-                <span className="hamb-label">[{menuOpen ? "CLOSE" : "MENU"}]</span>
               </button>
             </div>
           </div>
