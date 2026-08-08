@@ -291,12 +291,14 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 function SectionShell({
   children,
   className = "",
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
-    <section className={`relative ${className}`}>
+    <section id={id} className={`relative ${className}`}>
       <Grain />
       <div className="relative z-10">{children}</div>
     </section>
@@ -1075,6 +1077,59 @@ function LandingPage() {
     { n: "100%", l: "sensitive actions logged" },
   ];
 
+  const docsEndpoints = [
+    { m: "POST", p: "/api/auth/register", d: "create account" },
+    { m: "POST", p: "/api/auth/login", d: "issue token pair" },
+    { m: "POST", p: "/api/auth/refresh-token", d: "rotate refresh token" },
+    { m: "POST", p: "/api/auth/logout", d: "revoke refresh token" },
+    { m: "POST", p: "/api/auth/logout-all", d: "revoke every device" },
+    { m: "POST", p: "/api/auth/forget-password", d: "request reset" },
+    { m: "POST", p: "/api/auth/reset-password", d: "set new password" },
+    { m: "POST", p: "/api/auth/change-password", d: "authed, change password" },
+    { m: "POST", p: "/api/auth/verify-email", d: "confirm address" },
+    { m: "POST", p: "/api/auth/resend-verification", d: "resend token" },
+    { m: "GET", p: "/api/users/me", d: "current profile" },
+    { m: "GET", p: "/api/manager/dashboard", d: "admin + manager" },
+    { m: "GET", p: "/api/admin/dashboard", d: "admin only" },
+    { m: "GET", p: "/api/oauth/google", d: "google sign-in" },
+    { m: "GET", p: "/api/oauth/github", d: "github sign-in" },
+  ];
+
+  const changelog = [
+    {
+      v: "v1.4.2",
+      d: "current",
+      items: [
+        "frontend: configurable api base url",
+        "audit stream section",
+        "interactive landing experiences",
+      ],
+    },
+    {
+      v: "v1.3.0",
+      d: "release",
+      items: [
+        "logout-all revocation",
+        "resend-verification endpoint",
+        "lockout window hardening",
+      ],
+    },
+    {
+      v: "v1.2.0",
+      d: "release",
+      items: [
+        "oauth google + github flows",
+        "manager role dashboard",
+        "zod request validation",
+      ],
+    },
+    {
+      v: "v1.0.0",
+      d: "initial",
+      items: ["jwt access + refresh rotation", "rbac user / manager / admin", "argon2 / bcrypt hashing"],
+    },
+  ];
+
   return (
     <>
       <main className="relative z-10 min-h-screen bg-background text-foreground">
@@ -1660,6 +1715,187 @@ function LandingPage() {
         </SectionShell>
 
         {}
+        <SectionShell id="docs" className="border-b border-border">
+          <div className="relative mx-auto max-w-6xl px-6 py-24 md:py-32">
+            {}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 -translate-y-1/2 select-none overflow-hidden"
+            >
+              <div
+                className="aud-watermark whitespace-nowrap text-center font-medium leading-none text-foreground"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(110px, 20vw, 280px)",
+                }}
+              >
+                DOCS
+              </div>
+            </div>
+
+            <div className="grid gap-10 md:grid-cols-12">
+              {}
+              <div className="md:col-span-5">
+                <div className="md:sticky md:top-24">
+                  <Reveal>
+                    <TypedEyebrow>§ 07 — API REFERENCE</TypedEyebrow>
+                    <h2
+                      className="mt-4 text-[32px] font-medium leading-[1.02] tracking-tight md:text-[52px]"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Every route,{" "}
+                      <span className="cta-stretch-critical" style={{ color: "var(--critical)" }}>
+                        documented
+                      </span>
+                      .
+                    </h2>
+                    <p className="mt-6 max-w-[36ch] text-[14px] leading-[1.75] text-muted-foreground">
+                      Mount the middleware, hit the endpoints. Swagger/OpenAPI specs are
+                      auto-generated at <span className="font-mono text-foreground">/docs</span>{" "}
+                      for every route — no annotations to keep in sync.
+                    </p>
+                    <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-background/40 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      <span
+                        aria-hidden
+                        className="inline-block h-1.5 w-1.5 rounded-full"
+                        style={{
+                          background: "var(--critical)",
+                          boxShadow: "0 0 10px 1px color-mix(in oklab, var(--critical) 65%, transparent)",
+                        }}
+                      />
+                      /api/v1 · bearer auth
+                    </div>
+                  </Reveal>
+                </div>
+              </div>
+
+              {}
+              <div className="md:col-span-7">
+                <div className="grid gap-3">
+                  {docsEndpoints.map((e, i) => (
+                    <Reveal key={e.m + e.p} delay={i * 60}>
+                      <div className="group flex items-center gap-4 rounded-lg border border-border bg-[var(--surface)] px-5 py-4 transition-colors duration-300 hover:border-[var(--critical)]/40">
+                        <span
+                          className={`doc-method shrink-0 rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${
+                            e.m === "POST"
+                              ? "text-[var(--critical)]"
+                              : "text-[#7dd3fc]"
+                          }`}
+                          style={{
+                            border: `1px solid ${
+                              e.m === "POST"
+                                ? "color-mix(in oklab, var(--critical) 45%, var(--border))"
+                                : "color-mix(in oklab, #7dd3fc 45%, var(--border))"
+                            }`,
+                          }}
+                        >
+                          {e.m}
+                        </span>
+                        <code className="truncate font-mono text-[13px] text-foreground/90">
+                          {e.p}
+                        </code>
+                        <span className="ml-auto hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground md:inline">
+                          {e.d}
+                        </span>
+                      </div>
+                    </Reveal>
+                  ))}
+                </div>
+
+                <Reveal delay={200}>
+                  <div className="mt-6 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    <span
+                      aria-hidden
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{
+                        background: "var(--critical)",
+                        boxShadow: "0 0 12px var(--critical)",
+                        animation: "pulse 2s ease-in-out infinite",
+                      }}
+                    />
+                    live spec · swagger ui at /docs
+                  </div>
+                </Reveal>
+              </div>
+            </div>
+          </div>
+        </SectionShell>
+
+        {}
+        <SectionShell id="changelog" className="border-b border-border">
+          <div className="relative mx-auto max-w-6xl px-6 py-24 md:py-32">
+            {}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 -translate-y-1/2 select-none overflow-hidden"
+            >
+              <div
+                className="aud-watermark whitespace-nowrap text-center font-medium leading-none text-foreground"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(100px, 18vw, 260px)",
+                }}
+              >
+                LOG
+              </div>
+            </div>
+
+            <Reveal>
+              <TypedEyebrow>§ 08 — CHANGELOG</TypedEyebrow>
+              <h2
+                className="mt-4 max-w-[20ch] text-[32px] font-medium leading-[1.02] tracking-tight md:text-[52px]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                What shipped,{" "}
+                <span className="cta-stretch-critical" style={{ color: "var(--critical)" }}>
+                  when
+                </span>
+                .
+              </h2>
+            </Reveal>
+
+            <div className="mt-12 space-y-0">
+              {changelog.map((c, i) => (
+                <Reveal key={c.v} delay={i * 80}>
+                  <div className="group grid gap-3 border-t border-border py-7 md:grid-cols-12 md:gap-8">
+                    <div className="md:col-span-3">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-[14px] font-bold text-foreground">
+                          {c.v}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                          {c.d}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="md:col-span-9">
+                      <ul className="space-y-2">
+                        {c.items.map((it) => (
+                          <li
+                            key={it}
+                            className="flex items-start gap-3 text-[13px] leading-[1.65] text-muted-foreground"
+                          >
+                            <span
+                              aria-hidden
+                              className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
+                              style={{
+                                background: i === 0 ? "var(--critical)" : "var(--border)",
+                                boxShadow: i === 0 ? "0 0 8px var(--critical)" : undefined,
+                              }}
+                            />
+                            <span className="font-mono">{it}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {}
         <SectionShell className="border-y border-border">
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
             <div className="grid gap-12 md:grid-cols-3">
@@ -1745,7 +1981,7 @@ function LandingPage() {
             />
 
             <Reveal>
-              <Eyebrow>§ 07 — BEGIN</Eyebrow>
+              <Eyebrow>§ 09 — BEGIN</Eyebrow>
               <h2
                 className="mx-auto mt-6 max-w-[18ch] text-[40px] font-medium leading-[1.05] tracking-tight md:text-[64px]"
                 style={{ fontFamily: "var(--font-display)" }}
