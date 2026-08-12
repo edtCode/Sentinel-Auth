@@ -1,6 +1,5 @@
 # Render Blueprint — deploy the backend service from the backend/ folder.
-# Connects this repo to Render. Backend: Node + Express on Render;
-# frontend deploys separately to Vercel (root directory: frontend).
+# Connects this repo to Render. Backend: Node + Express on Render.
 services:
   - type: web
     name: sentinel-auth-api
@@ -22,4 +21,4 @@ services:
       #   (or a DATABASE_URL-backed connection if you adapt src/config/db.js)
       # - JWT_SECRET, JWT_REFRESH_SECRET
       # - GOOGLE_CLIENT_ID/SECRET/CALLBACK_URL, GITHUB_CLIENT_ID/SECRET/CALLBACK_URL
-      # - CORS_ORIGINS — your deployed Vercel frontend URL(s)
+      # - CORS_ORIGINS — your deployed frontend URL(s)

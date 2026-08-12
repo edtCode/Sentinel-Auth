@@ -2,17 +2,11 @@
   "name": "sentinel-auth-monorepo",
   "version": "1.1.0",
   "private": true,
-  "description": "SentinelAuth monorepo — backend (Express + PostgreSQL) deploys to Render, frontend (TanStack Start) deploys to Vercel.",
+  "description": "SentinelAuth backend — Express + PostgreSQL auth service, deploys to Render.",
   "scripts": {
     "dev:server": "npm --prefix backend run dev",
-    "dev:client": "npm --prefix frontend run dev",
-    "dev": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "npm --prefix frontend run build",
     "test": "npm --prefix backend test",
     "start:backend": "npm --prefix backend start"
-  },
-  "devDependencies": {
-    "concurrently": "^10.0.4"
   },
   "license": "ISC"
 }

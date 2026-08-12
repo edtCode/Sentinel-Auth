@@ -127,7 +127,7 @@ cp .env.example .env
 # (optional) GOOGLE_CLIENT_ID/SECRET, GITHUB_CLIENT_ID/SECRET
 
 # then start the server
-npm run dev
+npm run dev:server
 ```
 
 For tests, also copy `.env.test.example` to `.env.test` pointed at a disposable test database, then run:
