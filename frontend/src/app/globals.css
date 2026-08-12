@@ -1,0 +1,79 @@
+:root {
+  --bg: #0b0d10;
+  --bg-elevated: rgba(11, 13, 16, 0.88);
+  --line: rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --text: rgba(245, 247, 250, 0.96);
+  --muted: rgba(245, 247, 250, 0.66);
+  --accent: #76f7c5;
+  --accent-dim: rgba(118, 247, 197, 0.16);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --max: 1440px;
+  --nav-h: 76px;
+  --font-display: "IBM Plex Sans Condensed", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+.page-shell {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 80px 20px 120px;
+}
+
+.demo-copy {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --nav-h: 68px;
+  }
+
+  .page-shell {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
